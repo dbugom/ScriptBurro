@@ -1,5 +1,5 @@
 import { api, call } from '../shared/browser.js';
-import { h, clear, applyTheme } from '../shared/dom.js';
+import { h, fill, applyTheme } from '../shared/dom.js';
 import { accessBanner, openDashboard } from './common.js';
 
 const app = document.getElementById('app');
@@ -18,7 +18,7 @@ async function render() {
       onChange: async (e) => { await call('scripts.patch', { id: s.id, enabled: e.target.checked }); }
     }), h('span'));
 
-  clear(app).append(
+  fill(app,
     h('header', null, h('img', { src: 'icons/icon-48.png', alt: '' }), h('strong', null, 'TamperDonkey'),
       h('button', { onClick: () => { openDashboard(); window.close(); } }, 'Dashboard')),
     !data.userScripts && h('section', null, accessBanner(render)),

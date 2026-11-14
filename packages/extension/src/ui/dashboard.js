@@ -4,7 +4,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { Compartment, EditorState } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
 import { api, call } from '../shared/browser.js';
-import { h, clear, timeAgo, applyTheme, toast } from '../shared/dom.js';
+import { h, clear, fill, timeAgo, applyTheme, toast } from '../shared/dom.js';
 import { NEW_SCRIPT_TEMPLATE } from '../shared/defaults.js';
 import { zipFiles, unzipFiles } from '../shared/zip.js';
 import { accessBanner } from './common.js';
@@ -46,7 +46,7 @@ function pickFile(accept) {
 
 function frame(active, ...body) {
   const pendingCount = status?.pending || 0;
-  clear(app).append(
+  fill(app,
     h('div', { class: 'top' }, h('div', { class: 'top-in' },
       h('div', { class: 'brand' }, h('img', { src: 'icons/icon-48.png', alt: '' }), 'TamperDonkey'),
       h('nav', { 'aria-label': 'Sections' }, ROUTES.map(([id, label]) => h('a', {
@@ -130,7 +130,7 @@ async function viewScripts() {
       toast(done);
       route();
     });
-    clear(bulk).append(h('span', { class: 'muted' }, `${selected.size} selected`),
+    fill(bulk, h('span', { class: 'muted' }, `${selected.size} selected`),
       h('button', { onClick: () => each((id) => call('scripts.patch', { id, enabled: true }), 'Enabled') }, 'Enable'),
       h('button', { onClick: () => each((id) => call('scripts.patch', { id, enabled: false }), 'Disabled') }, 'Disable'),
       h('button', { class: 'danger', onClick: () => each((id) => call('scripts.trash', { id }), 'Moved to trash') }, 'Move to trash'));
@@ -247,7 +247,7 @@ async function viewEditor(id, seedOrigin) {
 
   const drawCode = () => {
     const host = h('div', { class: 'editor' });
-    clear(panel).append(host, settings.ai.enabled && aiPanel(() => view.state.doc.toString(), (code) => {
+    fill(panel, host, settings.ai.enabled && aiPanel(() => view.state.doc.toString(), (code) => {
       view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: code } });
     }));
     view = new EditorView({
@@ -273,7 +273,7 @@ async function viewEditor(id, seedOrigin) {
     const s = existing;
     const patch = (p) => guard(async () => { Object.assign(s, await call('scripts.patch', { id: s.id, ...p })); toast('Saved'); });
     const ov = s.overrides || { includes: [], matches: [], excludes: [] };
-    clear(panel).append(h('div', { class: 'grid2' },
+    fill(panel, h('div', { class: 'grid2' },
       h('div', { class: 'card pad' },
         h('h3', null, 'Behaviour'),
         h('label', null, h('input', { type: 'checkbox', checked: s.enabled, onChange: (e) => patch({ enabled: e.target.checked }) }), 'Enabled'),
@@ -325,15 +325,15 @@ async function viewEditor(id, seedOrigin) {
     };
     for (const [k, v] of Object.entries(values)) rows.append(row(k, v, false));
     rows.append(row('', '', true));
-    clear(panel).append(
+    fill(panel,
       h('p', { class: 'muted' }, 'Data this script saved with GM_setValue. Values are JSON. Pages that are open get the change at once.'),
       h('div', { class: 'card tablewrap' }, h('table', null, h('thead', null, h('tr', null, h('th', null, 'Key'), h('th', null, 'Value (JSON)'), h('th', null, ''))), rows)));
   };
 
   const tabs = h('div', { class: 'tabs', role: 'tablist' });
   const drawTabs = () => {
-    clear(tabs).append([['code', 'Code'], existing && ['settings', 'Settings'], existing && ['storage', 'Storage']].filter(Boolean).map(([t, label]) =>
-      h('button', { role: 'tab', 'aria-selected': tab === t, class: tab === t ? 'active' : '', onClick: () => { tab = t; drawTabs(); } }, label)));
+    fill(tabs, [['code', 'Code'], existing && ['settings', 'Settings'], existing && ['storage', 'Storage']].filter(Boolean).map(([t, label]) =>
+      h('button', { role: 'tab', 'aria-selected': String(tab === t), class: tab === t ? 'active' : '', onClick: () => { tab = t; drawTabs(); } }, label)));
     view = null;
     if (tab === 'code') drawCode();
     else if (tab === 'settings') drawSettings();

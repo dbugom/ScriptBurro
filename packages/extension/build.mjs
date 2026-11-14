@@ -41,7 +41,7 @@ function manifest(target) {
     m.browser_specific_settings = {
       gecko: {
         id: 'tamperdonkey@dbugom.github.io',
-        strict_min_version: '140.0',
+        strict_min_version: '142.0',
         data_collection_permissions: { required: ['none'] }
       }
     };

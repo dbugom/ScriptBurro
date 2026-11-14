@@ -1,5 +1,5 @@
 import { api, call } from '../shared/browser.js';
-import { h, clear, applyTheme, explainGrant } from '../shared/dom.js';
+import { h, fill, applyTheme, explainGrant } from '../shared/dom.js';
 import { diffLines } from '../shared/diff.js';
 
 const app = document.getElementById('app');
@@ -53,7 +53,7 @@ function facts(p) {
 }
 
 function shell(title, ...body) {
-  clear(app).append(h('div', { class: 'review' },
+  fill(app, h('div', { class: 'review' },
     h('div', { class: 'head' }, h('img', { src: 'icons/icon-48.png', alt: '' }), h('h1', null, title)), ...body));
 }
 

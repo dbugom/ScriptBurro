@@ -18,12 +18,13 @@ function loadPlaywright() {
 }
 
 /** Starts Chromium with the built extension loaded and user scripts allowed. */
-export async function launch() {
+export async function launch({ extraExtensions = [] } = {}) {
   const { chromium } = loadPlaywright();
+  const all = [EXT_DIR, ...extraExtensions].join(',');
   const context = await chromium.launchPersistentContext('', {
     channel: 'chromium',
     headless: true,
-    args: [`--disable-extensions-except=${EXT_DIR}`, `--load-extension=${EXT_DIR}`]
+    args: [`--disable-extensions-except=${all}`, `--load-extension=${all}`]
   });
   let [sw] = context.serviceWorkers();
   if (!sw) sw = await context.waitForEvent('serviceworker');
@@ -76,4 +77,23 @@ export async function mark(page, name, timeout = 4000) {
     return undefined;
   }
   return page.evaluate((n) => document.documentElement.dataset[n], name);
+}
+
+export function freePort() {
+  return new Promise((resolve) => {
+    const s = http.createServer().listen(0, '127.0.0.1', () => {
+      const { port } = s.address();
+      s.close(() => resolve(port));
+    });
+  });
+}
+
+export async function until(fn, timeout = 8000) {
+  const end = Date.now() + timeout;
+  for (;;) {
+    const v = await fn();
+    if (v) return v;
+    if (Date.now() > end) throw new Error('Timed out waiting for a condition.');
+    await new Promise((r) => setTimeout(r, 100));
+  }
 }

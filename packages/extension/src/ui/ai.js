@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { extractCode } from './ai-extract.js';
 
 /**
  * Optional AI helper for the editor. It is off until the user enables it and stores
@@ -64,10 +65,4 @@ export async function runAi(cfg, task, input, onText, signal) {
     if (e instanceof Anthropic.APIError) throw new Error(`API error ${e.status}: ${e.message}`);
     throw e;
   }
-}
-
-/** Returns the userscript from the first fenced code block that has a metadata header. */
-export function extractCode(text) {
-  const blocks = [...text.matchAll(/```[a-z]*\n([\s\S]*?)```/g)].map((m) => m[1]);
-  return blocks.find((b) => b.includes('==UserScript==')) || null;
 }

@@ -9,6 +9,11 @@ export function h(tag, props, ...children) {
     else if (k in el && k !== 'list' && k !== 'form') el[k] = v;
     else el.setAttribute(k, v === true ? '' : v);
   }
+  return add(el, children);
+}
+
+/** Appends children, flattening arrays and skipping null, undefined and false. */
+export function add(el, ...children) {
   for (const c of children.flat(Infinity)) {
     if (c === null || c === undefined || c === false) continue;
     el.append(c instanceof Node ? c : document.createTextNode(String(c)));
@@ -19,6 +24,11 @@ export function h(tag, props, ...children) {
 export function clear(el) {
   while (el.firstChild) el.firstChild.remove();
   return el;
+}
+
+/** Replaces the content of an element. */
+export function fill(el, ...children) {
+  return add(clear(el), children);
 }
 
 export function timeAgo(ts) {

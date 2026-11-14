@@ -17,6 +17,9 @@ before(async () => {
       res.end(JSON.stringify({ hello: 'world', method: req.method }));
     },
     '/lib.js': 'var libValue = 41;',
+    '/note.txt': (req, res) => { res.writeHead(200, { 'content-type': 'text/plain' }); res.end('resource text'); },
+    '/opened': PAGE,
+    '/misc': PAGE,
     '/hello.user.js': `${header('Hello from URL', ['@match http://127.0.0.1/*', '@grant none'])}document.documentElement.dataset.hello = '1';`
   });
   b = await launch();
@@ -215,5 +218,64 @@ test('a script can be run on demand in a tab', async () => {
   const tab = (await b.call('tabs.list')).find((t) => t.url.endsWith('/other'));
   await b.call('scripts.run', { id: s.id, tabId: tab.id });
   assert.equal(await mark(p, 'ondemand'), '1');
+  await p.close();
+});
+
+test('the remaining GM functions work: styles, resources, tab data, cookies, new tabs, promise API', async () => {
+  await b.call('scripts.install', {
+    source: `${header('Misc', ['@match http://127.0.0.1/misc*', '@run-at document-body',
+      '@grant GM_addStyle', '@grant GM_getResourceText', '@grant GM_getResourceURL', '@grant GM_getTab', '@grant GM_saveTab',
+      '@grant GM_cookie', '@grant GM_openInTab', '@grant GM.setValue', '@grant GM.getValue', '@grant GM.listValues', '@grant GM_addElement',
+      `@resource note ${web.origin}/note.txt`])}
+const d = document.documentElement.dataset;
+d.body = String(!!document.body);
+GM_addStyle('h1 { color: rgb(1, 2, 3) }');
+GM_addElement(document.body, 'p', { id: 'added', textContent: 'added' });
+d.res = GM_getResourceText('note') + '|' + GM_getResourceURL('note').slice(0, 15);
+d.info = GM_info.script.name + '|' + GM_info.script.version + '|' + GM_info.scriptHandler;
+GM_getTab((t) => { t.visits = (t.visits || 0) + 1; GM_saveTab(t, () => { d.tab = String(t.visits); }); });
+(async () => {
+  await GM.setValue('a', [1, 2]);
+  d.promise = JSON.stringify(await GM.getValue('a')) + '|' + (await GM.listValues()).join();
+})();
+GM_cookie.set({ name: 'td', value: 'yes' }, (err) => {
+  GM_cookie.list({ name: 'td' }, (list, e) => { d.cookie = e || err || list.map((c) => c.name + '=' + c.value).join(); });
+});
+if (location.search === '?open') GM_openInTab('/opened', { active: false });`
+  });
+  const p = await b.context.newPage();
+  await p.goto(`${web.origin}/misc`);
+  assert.equal(await mark(p, 'body'), 'true');
+  assert.equal(await mark(p, 'res'), 'resource text|data:text/plain');
+  assert.equal(await mark(p, 'info'), 'Misc|1.0|TamperDonkey');
+  assert.equal(await mark(p, 'tab'), '1');
+  assert.equal(await mark(p, 'promise'), '[1,2]|a');
+  assert.equal(await mark(p, 'cookie'), 'td=yes');
+  assert.equal(await p.evaluate(() => getComputedStyle(document.querySelector('h1')).color), 'rgb(1, 2, 3)');
+  assert.equal(await p.locator('#added').textContent(), 'added');
+  // Tab data stays with the tab across a reload.
+  await p.reload();
+  assert.equal(await mark(p, 'tab'), '2');
+
+  const opened = b.context.waitForEvent('page');
+  await p.goto(`${web.origin}/misc?open`);
+  const tab = await opened;
+  await tab.waitForURL(/\/opened$/);
+  await tab.close();
+  await p.close();
+});
+
+test('a context-menu script is not injected on load but is offered for the page', async () => {
+  const s = await b.call('scripts.install', {
+    source: `${header('Ctx', ['@match http://127.0.0.1/*', '@run-at context-menu', '@grant none'])}document.documentElement.dataset.ctx = '1';`
+  });
+  const p = await b.context.newPage();
+  await p.goto(`${web.origin}/other`);
+  assert.equal(await mark(p, 'ctx', 600), undefined);
+  const tab = (await b.call('tabs.list')).find((t) => t.url.endsWith('/other'));
+  const forTab = await b.call('scripts.forTab', { tabId: tab.id, url: tab.url });
+  assert.ok(forTab.scripts.some((x) => x.id === s.id));
+  await b.call('scripts.run', { id: s.id, tabId: tab.id });
+  assert.equal(await mark(p, 'ctx'), '1');
   await p.close();
 });
