@@ -1,0 +1,15 @@
+{
+  "name": "tamperdonkey-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that lets AI tools manage TamperDonkey userscripts through a local bridge.",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "bin": { "tamperdonkey-mcp": "src/cli.js" },
+  "files": ["src"],
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.0",
+    "ws": "^8.18.0",
+    "zod": "^3.25.0"
+  }
+}

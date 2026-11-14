@@ -1,0 +1,25 @@
+{
+  "name": "tamperdonkey",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Open-source userscript manager for Chrome and Firefox (Manifest V3), with an MCP bridge.",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "node packages/extension/build.mjs",
+    "test": "node --test \"packages/*/test/*.test.js\"",
+    "test:e2e": "node --test --test-concurrency=1 \"tests/e2e/*.test.js\"",
+    "lint": "eslint .",
+    "lint:firefox": "web-ext lint --source-dir packages/extension/dist/firefox",
+    "check": "npm run lint && npm test && npm run build && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "web-ext": "^10.0.0"
+  }
+}
