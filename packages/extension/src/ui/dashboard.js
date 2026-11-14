@@ -9,6 +9,7 @@ import { NEW_SCRIPT_TEMPLATE } from '../shared/defaults.js';
 import { zipFiles, unzipFiles } from '../shared/zip.js';
 import { accessBanner } from './common.js';
 import { runAi } from './ai.js';
+import { missingPermissions, requestForGrants, PERMISSION_LABEL } from '../shared/permissions.js';
 
 const app = document.getElementById('app');
 let settings = null;
@@ -234,7 +235,10 @@ async function viewEditor(id, seedOrigin) {
   };
 
   const save = () => guard(async () => {
-    const r = await call('scripts.install', { source: view ? view.state.doc.toString() : source, id: existing?.id });
+    const text = view ? view.state.doc.toString() : source;
+    // Ask for cookie or download access while this click still counts as a user action.
+    await requestForGrants((await call('scripts.preview', { source: text })).meta.grants);
+    const r = await call('scripts.install', { source: text, id: existing?.id });
     setDirty(false);
     toast(r.warnings.length ? `Saved. ${r.warnings[0]}` : 'Saved', r.warnings.length ? 'error' : 'info');
     if (!existing) location.hash = `#edit/${r.id}`;
@@ -269,11 +273,20 @@ async function viewEditor(id, seedOrigin) {
     return h('div', { class: 'field' }, h('span', { class: 'lbl' }, label), ta, h('span', { class: 'help' }, help));
   };
 
-  const drawSettings = () => {
+  const drawSettings = async () => {
     const s = existing;
+    const missing = await missingPermissions(s.grants);
     const patch = (p) => guard(async () => { Object.assign(s, await call('scripts.patch', { id: s.id, ...p })); toast('Saved'); });
     const ov = s.overrides || { includes: [], matches: [], excludes: [] };
-    fill(panel, h('div', { class: 'grid2' },
+    fill(panel,
+      missing.length > 0 && h('div', { class: 'banner', role: 'alert' },
+        h('div', null, h('strong', null, 'This script needs one more permission. '), `It asks to ${missing.map((m) => PERMISSION_LABEL[m]).join(' and ')}, and the browser has not allowed TamperDonkey to do that yet.`),
+        h('button', { class: 'primary', id: 'grant-permission', onClick: () => guard(async () => {
+          const left = await requestForGrants(s.grants);
+          toast(left.length ? 'Permission was not granted' : 'Allowed. Reload open pages.', left.length ? 'error' : 'info');
+          drawSettings();
+        }) }, 'Allow')),
+      h('div', { class: 'grid2' },
       h('div', { class: 'card pad' },
         h('h3', null, 'Behaviour'),
         h('label', null, h('input', { type: 'checkbox', checked: s.enabled, onChange: (e) => patch({ enabled: e.target.checked }) }), 'Enabled'),

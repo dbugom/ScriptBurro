@@ -15,8 +15,10 @@ const runtime = (await transform(await fs.readFile(path.join(root, 'src/inject/r
 
 const PERMISSIONS = [
   'storage', 'unlimitedStorage', 'tabs', 'alarms', 'notifications', 'contextMenus',
-  'webNavigation', 'downloads', 'cookies', 'clipboardWrite'
+  'webNavigation', 'clipboardWrite'
 ];
+// Requested only when a script that uses GM_cookie or GM_download is installed.
+const OPTIONAL = ['cookies', 'downloads'];
 
 function manifest(target) {
   const m = {
@@ -32,11 +34,12 @@ function manifest(target) {
   if (target === 'chrome') {
     m.minimum_chrome_version = '135';
     m.permissions = [...PERMISSIONS, 'userScripts'];
+    m.optional_permissions = OPTIONAL;
     m.background = { service_worker: 'background.js' };
   } else {
     // Firefox only offers userScripts as an optional permission the user grants at runtime.
     m.permissions = PERMISSIONS;
-    m.optional_permissions = ['userScripts'];
+    m.optional_permissions = ['userScripts', ...OPTIONAL];
     m.background = { scripts: ['background.js'] };
     m.browser_specific_settings = {
       gecko: {

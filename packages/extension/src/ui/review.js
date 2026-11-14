@@ -1,6 +1,7 @@
 import { api, call } from '../shared/browser.js';
 import { h, fill, applyTheme, explainGrant } from '../shared/dom.js';
 import { diffLines } from '../shared/diff.js';
+import { requestForGrants } from '../shared/permissions.js';
 
 const app = document.getElementById('app');
 const q = new URLSearchParams(location.search);
@@ -75,6 +76,7 @@ async function reviewUrl(url) {
   const btn = h('button', { class: 'primary', onClick: async () => {
     btn.disabled = true;
     try {
+      await requestForGrants(p.meta.grants);
       await call('scripts.install', { source: p.source, url });
       done(again ? 'Script updated' : 'Script installed');
     } catch (e) {
@@ -92,6 +94,7 @@ async function reviewUpdate(id) {
   if (!s.pendingSource) return done('No update is waiting for this script');
   const p = await call('scripts.preview', { source: s.pendingSource });
   const answer = async (accept) => {
+    if (accept) await requestForGrants(p.meta.grants);
     await call('scripts.applyUpdate', { id, accept });
     done(accept ? 'Script updated' : 'Update skipped');
   };
@@ -104,6 +107,7 @@ async function reviewUpdate(id) {
 async function reviewPending(id) {
   const p = (await call('pending.list')).find((x) => x.id === id);
   if (!p) return done('This request was already answered or has expired');
+  let grants = [];
   const body = [h('div', { class: 'banner info' }, h('div', null, h('strong', null, p.client), ' asks TamperDonkey to: ', h('strong', null, p.summary), '.'))];
   if (p.cmd === 'scripts.install') {
     const prev = await call('scripts.preview', { source: p.args.source, url: p.args.url });
@@ -111,12 +115,14 @@ async function reviewPending(id) {
       const cur = await call('scripts.get', { id: p.args.id });
       prev.existing = { version: cur.version, source: cur.source, trashed: false };
     }
+    grants = prev.meta.grants;
     body.push(...facts(prev), ...sourceOrDiff(prev, prev.source));
   } else {
     body.push(h('h3', null, 'Request'), h('pre', { class: 'code' }, JSON.stringify(p.args, null, 2)));
   }
   const answer = async (accept) => {
     try {
+      if (accept) await requestForGrants(grants);
       await call('pending.resolve', { id, accept });
       done(accept ? 'Request accepted' : 'Request refused');
     } catch (e) {

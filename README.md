@@ -57,6 +57,7 @@ Functions, each also available in promise form under `GM.*`:
 - **Any other `@grant`**: the script runs in an isolated world. It shares the DOM with the page but not the page's JavaScript variables, and `unsafeWindow` is that isolated window. A script that needs page variables must use `@grant none`.
 - **`GM_xmlhttpRequest` and `GM_download`** only reach hosts listed in `@connect` (plus hosts you add in the script's settings), and only over https unless you allow http in Settings. A redirect to a host outside `@connect` is followed by the browser, but its response is withheld from the script. `onprogress` is not reported, and headers the browser reserves (`Cookie`, `Origin`, `Referer`, `User-Agent`) cannot be set.
 - **`GM_cookie`** is limited to the page the script runs on and does not show HttpOnly cookies.
+- **`GM_cookie` and `GM_download`** need the browser's optional `cookies` and `downloads` permissions. TamperDonkey asks for them when you install or save a script that uses these functions; you can also allow them later on the script's Settings tab.
 - **`@require` and `@resource`** are downloaded at install time. A `#sha256=…` (or sha384, sha512) suffix is verified.
 - **`.tld`** in `@include` uses an approximation, not the full public-suffix list.
 
@@ -119,6 +120,16 @@ Layout:
 - `packages/extension`: the extension. `src/background` (service worker), `src/inject` (code that runs with each userscript), `src/ui` (dashboard, popup, review page).
 - `packages/mcp`: the `tamperdonkey-mcp` companion.
 - `tests/e2e`: browser tests.
+
+## Publishing to the Chrome Web Store
+
+```bash
+npm run package
+```
+
+This builds both targets and writes `packages/extension/dist/tamperdonkey-chrome-<version>.zip` (and the Firefox one). Everything else the store asks for is in `store/chrome/`: `listing.md` has the listing text, a justification for each permission, the remote-code answer and the reviewer test steps, next to five 1280x800 screenshots and the 440x280 promo tile. `node store/chrome/make-images.mjs` regenerates the images. The privacy policy is `PRIVACY.md`.
+
+Publishing needs a Chrome Web Store developer account (one-time registration fee, 2-step verification on the Google account). In the Developer Dashboard choose **Add new item**, upload the zip, fill the Store listing, Privacy, Distribution and Test instructions tabs from `listing.md`, then **Submit for review**.
 
 ## Status
 

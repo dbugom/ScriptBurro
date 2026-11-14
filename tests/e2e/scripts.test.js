@@ -257,7 +257,8 @@ if (location.search === '?open') GM_openInTab('/opened', { active: false });`
   assert.equal(await mark(p, 'info'), 'Misc|1.0|TamperDonkey');
   assert.equal(await mark(p, 'tab'), '1');
   assert.equal(await mark(p, 'promise'), '[1,2]|a');
-  assert.equal(await mark(p, 'cookie'), 'td=yes');
+  // The browser permission for cookies is optional and has not been granted yet.
+  assert.match(await mark(p, 'cookie'), /may not read and change cookies yet/);
   assert.equal(await p.evaluate(() => getComputedStyle(document.querySelector('h1')).color), 'rgb(1, 2, 3)');
   assert.equal(await p.locator('#added').textContent(), 'added');
   // Tab data stays with the tab across a reload.
@@ -269,6 +270,22 @@ if (location.search === '?open') GM_openInTab('/opened', { active: false });`
   const tab = await opened;
   await tab.waitForURL(/\/opened$/);
   await tab.close();
+  await p.close();
+});
+
+test('GM_cookie works once the user allows the optional cookie permission', async () => {
+  const misc = (await b.call('scripts.list')).find((s) => s.name === 'Misc');
+  const d = b.dashboard;
+  await d.goto(b.url(`dashboard.html#edit/${misc.id}`));
+  await d.reload();
+  await d.getByRole('tab', { name: 'Settings' }).click();
+  await d.getByText('This script needs one more permission.').waitFor();
+  await d.getByRole('button', { name: 'Allow', exact: true }).click();
+  await d.getByText('This script needs one more permission.').waitFor({ state: 'detached' });
+
+  const p = await b.context.newPage();
+  await p.goto(`${web.origin}/misc`);
+  assert.equal(await mark(p, 'cookie'), 'td=yes');
   await p.close();
 });
 

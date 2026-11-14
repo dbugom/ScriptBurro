@@ -1,5 +1,6 @@
 import { api } from '../shared/browser.js';
 import { checkConnect, resolveGrants } from '@tamperdonkey/core';
+import { hasPermission, PERMISSION_LABEL } from '../shared/permissions.js';
 import { findByToken, getValues, updateValues, getSettings, sessionGet, sessionSet } from './store.js';
 
 /** Events waiting for a page instance, keyed by "tabId:frameId:scriptId". */
@@ -141,6 +142,11 @@ function toBase64(buf) {
   return btoa(out);
 }
 
+async function needPermission(name, script) {
+  if (await hasPermission(name)) return;
+  throw new Error(`TamperDonkey may not ${PERMISSION_LABEL[name]} yet. Open "${script.meta.name}" in the dashboard, Settings tab, and allow it.`);
+}
+
 async function connectAllowed(script, url, sender) {
   const settings = await getSettings();
   const chk = checkConnect(script.meta, url, { pageUrl: sender.url, allowHttp: settings.allowHttp, extraHosts: script.connectApproved });
@@ -219,6 +225,7 @@ const METHODS = {
     if (String(id).startsWith(`${s.id}:`)) aborts.get(id)?.abort();
   }],
   download: ['download', async (s, [d], sender) => {
+    await needPermission('downloads', s);
     await connectAllowed(s, d.url, sender);
     const opts = { url: d.url, saveAs: !!d.saveAs };
     if (d.name) opts.filename = String(d.name).replace(/^[/\\.]+/, '').replace(/\.\.[/\\]/g, '').replace(/[<>:"|?*]/g, '_');
@@ -275,16 +282,19 @@ const METHODS = {
   }],
   // Cookies are limited to the page the script runs on, and HttpOnly cookies stay hidden.
   cookieList: ['cookie', async (s, [d], sender) => {
+    await needPermission('cookies', s);
     const q = { url: sender.url };
     if (d.name) q.name = String(d.name);
     return (await api.cookies.getAll(q)).filter((c) => !c.httpOnly);
   }],
   cookieSet: ['cookie', async (s, [d], sender) => {
+    await needPermission('cookies', s);
     const c = { url: sender.url, name: String(d.name), value: String(d.value ?? '') };
     for (const k of ['path', 'secure', 'expirationDate', 'sameSite']) if (d[k] !== undefined) c[k] = d[k];
     await api.cookies.set(c);
   }],
   cookieDelete: ['cookie', async (s, [d], sender) => {
+    await needPermission('cookies', s);
     await api.cookies.remove({ url: sender.url, name: String(d.name) });
   }]
 };

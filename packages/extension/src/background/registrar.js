@@ -77,8 +77,19 @@ async function configureWorld(worldId) {
   }
 }
 
-/** Makes the browser's registered user scripts equal to the enabled scripts in the store. */
-export async function syncRegistrations() {
+/**
+ * Makes the browser's registered user scripts equal to the enabled scripts in the store.
+ * Runs are queued, and scripts that stay registered are updated in place, so a page that
+ * loads during a sync still gets every script.
+ */
+let syncing = Promise.resolve();
+export function syncRegistrations() {
+  const run = syncing.then(doSync);
+  syncing = run.catch(() => {});
+  return run;
+}
+
+async function doSync() {
   if (!userScriptsAvailable()) return { available: false, registered: 0 };
   const settings = await getSettings();
   const scripts = (await allScripts()).filter((s) => s.enabled && !s.trashedAt && s.meta.runAt !== 'context-menu');
@@ -92,24 +103,32 @@ export async function syncRegistrations() {
     const entry = {
       id: s.id,
       matches: reg.matches,
+      excludeMatches: reg.excludeMatches,
       allFrames: !s.meta.noframes,
       runAt: RUN_AT[s.meta.runAt] || 'document_idle',
       world,
       js: [{ code: buildCode(s, settings) }]
     };
-    if (reg.excludeMatches.length) entry.excludeMatches = reg.excludeMatches;
     if (world === 'USER_SCRIPT' && (await configureWorld(worldIdOf(s)))) entry.worldId = worldIdOf(s);
     wanted.push(entry);
   }
 
-  const existing = await api.userScripts.getScripts();
-  if (existing.length) await api.userScripts.unregister({ ids: existing.map((e) => e.id) });
+  const existing = new Set((await api.userScripts.getScripts()).map((e) => e.id));
+  const gone = [...existing].filter((id) => !wanted.some((w) => w.id === id));
+  if (gone.length) await api.userScripts.unregister({ ids: gone });
   const failed = [];
   for (const entry of wanted) {
     try {
-      await api.userScripts.register([entry]);
+      if (existing.has(entry.id)) await api.userScripts.update([entry]);
+      else await api.userScripts.register([entry]);
     } catch (e) {
-      failed.push({ id: entry.id, error: String(e.message || e) });
+      // An update can fail when the world changed; replace the registration instead.
+      try {
+        await api.userScripts.unregister({ ids: [entry.id] }).catch(() => {});
+        await api.userScripts.register([entry]);
+      } catch (e2) {
+        failed.push({ id: entry.id, error: String(e2.message || e.message || e2) });
+      }
     }
   }
   return { available: true, registered: wanted.length - failed.length, failed };
