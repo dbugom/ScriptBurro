@@ -17,6 +17,7 @@ before(async () => {
       res.end(JSON.stringify({ hello: 'world', method: req.method }));
     },
     '/lib.js': 'var libValue = 41;',
+    '/hop': (req, res, u) => { res.writeHead(302, { location: `http://localhost:${u.searchParams.get('port')}/api` }); res.end(); },
     '/note.txt': (req, res) => { res.writeHead(200, { 'content-type': 'text/plain' }); res.end('resource text'); },
     '/opened': PAGE,
     '/misc': PAGE,
@@ -111,7 +112,10 @@ GM_xmlhttpRequest({ url: '/api', method: 'POST', data: 'x=1', responseType: 'jso
 GM_xmlhttpRequest({ url: 'http://localhost:${web.port}/api',
   onload: () => { document.documentElement.dataset.netdenied = 'LOADED'; },
   onerror: (r) => { document.documentElement.dataset.netdenied = r.error; } });
-GM.xmlHttpRequest({ url: '/api' }).then((r) => { document.documentElement.dataset.netpromise = r.responseText; });`
+GM.xmlHttpRequest({ url: '/api' }).then((r) => { document.documentElement.dataset.netpromise = r.responseText; });
+GM_xmlhttpRequest({ url: '/hop?port=${web.port}',
+  onload: (r) => { document.documentElement.dataset.nethop = 'LOADED ' + r.responseText; },
+  onerror: (r) => { document.documentElement.dataset.nethop = r.error; } });`
   });
   const p = await b.context.newPage();
   const before = web.hits.length;
@@ -119,8 +123,11 @@ GM.xmlHttpRequest({ url: '/api' }).then((r) => { document.documentElement.datase
   assert.equal(await mark(p, 'netok'), '200|world|POST|true');
   assert.match(await mark(p, 'netdenied'), /not listed in @connect/);
   assert.equal(JSON.parse(await mark(p, 'netpromise')).hello, 'world');
-  // The refused request never left the browser: only the two allowed calls reached /api.
-  assert.equal(web.hits.slice(before).filter((h) => h.path === '/api').length, 2);
+  // An allowed host that redirects elsewhere does not get the other host's answer through.
+  assert.match(await mark(p, 'nethop'), /Redirected to a host that is not allowed/);
+  // The directly refused request never left the browser. /api was reached by the two
+  // allowed calls and by the redirect, whose response was withheld from the script.
+  assert.equal(web.hits.slice(before).filter((h) => h.path === '/api').length, 3);
   await p.close();
 });
 

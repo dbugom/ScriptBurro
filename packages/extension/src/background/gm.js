@@ -60,6 +60,9 @@ export async function menusForTab(tabId) {
 }
 
 export async function forgetFrame(tabId, frameId) {
+  // Events queued for the document that just went away will never be collected.
+  const prefix = frameId === 0 ? `${tabId}:` : `${tabId}:${frameId}:`;
+  for (const k of queues.keys()) if (k.startsWith(prefix)) queues.delete(k);
   const menus = await sessionGet('menus', {});
   if (menus[tabId]) {
     menus[tabId] = frameId === 0 ? [] : menus[tabId].filter((c) => c.frameId !== frameId);
@@ -179,6 +182,14 @@ const METHODS = {
       const init = { method: d.method, headers, signal: ctrl.signal, credentials: d.anonymous ? 'omit' : 'include', redirect: 'follow' };
       if (!['GET', 'HEAD'].includes(d.method)) init.body = decodeBody(d.body, headers);
       const res = await fetch(d.url, init);
+      // A redirect must not carry the response of a host outside @connect back to the script.
+      if (res.url && res.url !== d.url) {
+        try {
+          await connectAllowed(s, res.url, sender);
+        } catch (e) {
+          return { failed: 'error', message: `Redirected to a host that is not allowed. ${e.message}` };
+        }
+      }
       const mime = d.overrideMimeType || res.headers.get('content-type') || '';
       const out = {
         status: res.status,

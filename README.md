@@ -55,7 +55,7 @@ Functions, each also available in promise form under `GM.*`:
 
 - **No `@grant`, or `@grant none`**: the script runs in the page's own JavaScript world and gets no GM functions except `GM_info`.
 - **Any other `@grant`**: the script runs in an isolated world. It shares the DOM with the page but not the page's JavaScript variables, and `unsafeWindow` is that isolated window. A script that needs page variables must use `@grant none`.
-- **`GM_xmlhttpRequest` and `GM_download`** only reach hosts listed in `@connect` (plus hosts you add in the script's settings), and only over https unless you allow http in Settings. `onprogress` is not reported, and headers the browser reserves (`Cookie`, `Origin`, `Referer`, `User-Agent`) cannot be set.
+- **`GM_xmlhttpRequest` and `GM_download`** only reach hosts listed in `@connect` (plus hosts you add in the script's settings), and only over https unless you allow http in Settings. A redirect to a host outside `@connect` is followed by the browser, but its response is withheld from the script. `onprogress` is not reported, and headers the browser reserves (`Cookie`, `Origin`, `Referer`, `User-Agent`) cannot be set.
 - **`GM_cookie`** is limited to the page the script runs on and does not show HttpOnly cookies.
 - **`@require` and `@resource`** are downloaded at install time. A `#sha256=…` (or sha384, sha512) suffix is verified.
 - **`.tld`** in `@include` uses an approximation, not the full public-suffix list.
