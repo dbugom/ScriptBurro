@@ -10,7 +10,7 @@ async function render() {
   applyTheme(settings.theme);
   const url = tab?.url || '';
   const web = /^https?:|^file:/.test(url);
-  const data = web ? await call('scripts.forTab', { tabId: tab.id, url }) : { scripts: [], menu: [], userScripts: (await call('status')).userScripts };
+  const data = web ? await call('scripts.forTab', { tabId: tab.id, url }) : { scripts: [], menu: [], badges: {}, userScripts: (await call('status')).userScripts };
 
   const toggle = (s) => h('label', { class: 'switch', title: s.enabled ? 'Enabled' : 'Disabled' },
     h('input', {
@@ -27,7 +27,8 @@ async function render() {
       !web && h('p', { class: 'muted' }, 'Scripts do not run on this kind of page.'),
       web && data.scripts.length === 0 && h('p', { class: 'muted' }, 'No installed script matches this page.'),
       data.scripts.map((s) => h('div', { class: 'item' }, toggle(s),
-        h('span', { class: 'name', title: s.name }, s.name),
+        h('span', { class: 'name', title: s.name }, s.name,
+          data.badges[s.id]?.title && h('div', { class: 'muted small' }, data.badges[s.id].title)),
         s.runAt === 'context-menu' && s.enabled && h('button', {
           title: 'Run now', onClick: async () => { try { await call('scripts.run', { id: s.id, tabId: tab.id }); window.close(); } catch (e) { alert(e.message); } }
         }, 'Run'),

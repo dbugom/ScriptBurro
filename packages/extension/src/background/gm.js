@@ -60,7 +60,20 @@ export async function menusForTab(tabId) {
   return (await sessionGet('menus', {}))[tabId] || [];
 }
 
+export async function badgesForTab(tabId) {
+  return (await sessionGet('badges', {}))[tabId] || {};
+}
+
 export async function forgetFrame(tabId, frameId) {
+  if (frameId === 0) {
+    const badges = await sessionGet('badges', {});
+    if (badges[tabId]) {
+      delete badges[tabId];
+      await sessionSet('badges', badges);
+      // The browser clears a tab's badge on navigation; the tooltip is reset here.
+      api.action.setTitle({ tabId, title: 'TamperDonkey' }).catch(() => {});
+    }
+  }
   // Events queued for the document that just went away will never be collected.
   const prefix = frameId === 0 ? `${tabId}:` : `${tabId}:${frameId}:`;
   for (const k of queues.keys()) if (k.startsWith(prefix)) queues.delete(k);
@@ -73,7 +86,7 @@ export async function forgetFrame(tabId, frameId) {
 }
 
 export async function forgetTab(tabId) {
-  for (const name of ['menus', 'tabdata']) {
+  for (const name of ['menus', 'tabdata', 'badges']) {
     const m = await sessionGet(name, {});
     if (m[tabId]) {
       delete m[tabId];
@@ -164,6 +177,22 @@ const METHODS = {
     const events = queues.get(k) || [];
     queues.delete(k);
     return events;
+  }],
+  // Toolbar badge for the tab the script runs in. Needs no grant: it only changes
+  // TamperDonkey's own icon. Only the top frame may set it.
+  badge: [null, async (s, [o], sender) => {
+    if (sender.frameId !== 0) return;
+    const tabId = sender.tab.id;
+    const text = String(o?.text ?? '').slice(0, 4);
+    const title = String(o?.title ?? '').slice(0, 200);
+    await api.action.setBadgeText({ tabId, text });
+    const color = /^#[0-9a-f]{6}$/i.test(o?.color || '') ? o.color : '#0d6b58';
+    await api.action.setBadgeBackgroundColor({ tabId, color });
+    try { await api.action.setBadgeTextColor?.({ tabId, color: '#ffffff' }); } catch { /* not in every browser */ }
+    await api.action.setTitle({ tabId, title: title ? `TamperDonkey\n${s.meta.name}: ${title}` : 'TamperDonkey' });
+    const badges = await sessionGet('badges', {});
+    badges[tabId] = { ...badges[tabId], [s.id]: { text, title } };
+    await sessionSet('badges', badges);
   }],
   setValue: ['setValue', async (s, [name, value], sender) => {
     await updateValues(s.id, (values) => { values[String(name)] = value; });

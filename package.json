@@ -1,7 +1,7 @@
 {
   "name": "tamperdonkey",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Open-source userscript manager for Chrome and Firefox (Manifest V3), with an MCP bridge.",
   "license": "GPL-3.0-or-later",
   "type": "module",

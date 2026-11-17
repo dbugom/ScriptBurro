@@ -29,6 +29,31 @@ function __td_boot(cfg, body) {
   };
   var scope = { GM_info: info, unsafeWindow: win, GM: { info: info } };
 
+  // GM.setBadge(text) or GM.setBadge({ text, title, color }): shows a short status on the
+  // TamperDonkey toolbar icon for this tab. Available to every script, with or without
+  // @grant. A page-world script has no channel to the extension, so it hands the request
+  // to a small relay that TamperDonkey runs next to it in an isolated world.
+  var lastBadge = null;
+  var badgeArgs = function (o) {
+    o = o !== null && typeof o === 'object' ? o : { text: o };
+    return { text: o.text === undefined || o.text === null ? '' : String(o.text), title: o.title ? String(o.title) : '', color: o.color ? String(o.color) : '' };
+  };
+  var setBadge = function (o, sendIt) {
+    var json = JSON.stringify(badgeArgs(o));
+    if (json === lastBadge) return;
+    lastBadge = json;
+    sendIt(json);
+  };
+  if (!cfg.sandbox && cfg.badgeEvent) {
+    var CE = win.CustomEvent;
+    var dispatch = doc.dispatchEvent.bind(doc);
+    scope.GM.setBadge = scope.GM_setBadge = function (o) {
+      setBadge(o, function (json) { dispatch(new CE(cfg.badgeEvent, { detail: json })); });
+    };
+  } else if (!cfg.sandbox) {
+    scope.GM.setBadge = scope.GM_setBadge = function () {};
+  }
+
   function start() {
     var run = function () {
       try {
@@ -420,6 +445,10 @@ function __td_boot(cfg, body) {
       delete: function (d) { return send('cookieDelete', [d || {}, location.href]); }
     }
   };
+  scope.GM.setBadge = scope.GM_setBadge = function (o) {
+    setBadge(o, function (json) { quiet(send('badge', [JSON.parse(json)])); });
+  };
+
   var promisedName = { xmlhttpRequest: ['xmlHttpRequest', 'xmlhttpRequest'], getResourceURL: ['getResourceUrl', 'getResourceURL'] };
 
   Object.keys(impl).forEach(function (name) {

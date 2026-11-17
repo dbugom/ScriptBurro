@@ -1,7 +1,7 @@
 /* global __TD_RUNTIME__, __TD_VERSION__ */
 import { api } from '../shared/browser.js';
 import { compileRules, resolveGrants, toRegistration, getHeader } from '@tamperdonkey/core';
-import { allScripts, getSettings } from './store.js';
+import { allScripts, getSettings, putScript, newToken } from './store.js';
 
 const RUN_AT = {
   'document-start': 'document_start',
@@ -29,7 +29,7 @@ export function buildCode(script, settings, { skipRules = false } = {}) {
   const reg = toRegistration(script.meta, script.overrides);
   const overrides = { ...script.overrides, excludes: [...(script.overrides?.excludes || []), ...(settings.blacklist || [])] };
   const needRules = !skipRules && (!reg?.exact || overrides.excludes.length > 0 || (script.meta.excludes || []).length > 0);
-  const params = ['GM', 'GM_info', 'unsafeWindow', ...(g.sandbox ? g.apis.map((a) => `GM_${a}`) : [])];
+  const params = ['GM', 'GM_info', 'unsafeWindow', 'GM_setBadge', ...(g.sandbox ? g.apis.map((a) => `GM_${a}`) : [])];
   const resources = {};
   for (const r of script.meta.resources || []) {
     const got = script.resources?.[r.name];
@@ -48,11 +48,32 @@ export function buildCode(script, settings, { skipRules = false } = {}) {
     noframes: script.meta.noframes,
     rules: needRules ? compileRules(script.meta, overrides) : null,
     resources,
+    badgeEvent: !g.sandbox && usesBadge(script) ? badgeEvent(script) : undefined,
     preloadValues: g.sandbox && g.apis.some((a) => VALUE_APIS.includes(a)),
     urlchange: g.sandbox && (script.meta.grants || []).includes('window.onurlchange')
   };
   const requires = (script.meta.requires || []).map((u) => script.requires?.[u] ?? '').join('\n;\n');
   return `(function(){${__TD_RUNTIME__}\n__td_boot(${JSON.stringify(cfg)},function(${params.join(',')}){\n${requires}\n;\n${script.source}\n});})();`;
+}
+
+/** True when a page-world script calls GM.setBadge / GM_setBadge and so needs the relay. */
+export function usesBadge(script) {
+  return /\bsetBadge\b/.test(script.source);
+}
+
+function badgeEvent(script) {
+  return `td-badge-${script.badgeKey}`;
+}
+
+/**
+ * Relay for page-world scripts. It runs in the script's isolated world, listens for the
+ * script's private badge event on the document and forwards it with the script's token.
+ */
+function buildBridge(script) {
+  return `(function(){var rt=(typeof browser!=='undefined'&&browser.runtime)||chrome.runtime;` +
+    `document.addEventListener(${JSON.stringify(badgeEvent(script))},function(e){try{` +
+    `rt.sendMessage({td:${JSON.stringify(script.token)},m:'badge',a:[JSON.parse(e.detail)]}).catch(function(){});` +
+    `}catch(_){}});})();`;
 }
 
 function publicMeta(m) {
@@ -99,6 +120,11 @@ async function doSync() {
   for (const s of scripts) {
     const reg = toRegistration(s.meta, s.overrides);
     if (!reg) continue;
+    if (!s.badgeKey) {
+      // Scripts installed before the badge feature existed get their private event name now.
+      s.badgeKey = newToken().slice(0, 24);
+      await putScript(s);
+    }
     const world = worldOf(s);
     const entry = {
       id: s.id,
@@ -110,6 +136,11 @@ async function doSync() {
       js: [{ code: buildCode(s, settings) }]
     };
     if (world === 'USER_SCRIPT' && (await configureWorld(worldIdOf(s)))) entry.worldId = worldIdOf(s);
+    if (world === 'MAIN' && usesBadge(s)) {
+      const bridge = { id: `${s.id}~bridge`, matches: reg.matches, excludeMatches: reg.excludeMatches, allFrames: entry.allFrames, runAt: 'document_start', world: 'USER_SCRIPT', js: [{ code: buildBridge(s) }] };
+      if (await configureWorld(worldIdOf(s))) bridge.worldId = worldIdOf(s);
+      wanted.push(bridge);
+    }
     wanted.push(entry);
   }
 
@@ -140,6 +171,10 @@ export async function runInTab(script, tabId, frameId) {
     throw new Error('This browser cannot run a script on demand.');
   }
   const settings = await getSettings();
+  if (!script.badgeKey) {
+    script.badgeKey = newToken().slice(0, 24);
+    await putScript(script);
+  }
   const world = worldOf(script);
   const injection = {
     target: frameId ? { tabId, frameIds: [frameId] } : { tabId },
@@ -149,6 +184,12 @@ export async function runInTab(script, tabId, frameId) {
   if (world === 'USER_SCRIPT') {
     await configureWorld();
     if (await configureWorld(worldIdOf(script))) injection.worldId = worldIdOf(script);
+  }
+  if (world === 'MAIN' && usesBadge(script)) {
+    const bridge = { target: injection.target, world: 'USER_SCRIPT', js: [{ code: buildBridge(script) }] };
+    await configureWorld();
+    if (await configureWorld(worldIdOf(script))) bridge.worldId = worldIdOf(script);
+    await api.userScripts.execute(bridge);
   }
   const res = await api.userScripts.execute(injection);
   const err = res.find((r) => r.error);

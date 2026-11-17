@@ -51,6 +51,10 @@ Functions, each also available in promise form under `GM.*`:
 
 `GM_addStyle`, `GM_addElement`, `GM_getValue`, `GM_setValue`, `GM_deleteValue`, `GM_listValues`, `GM_getValues`, `GM_setValues`, `GM_deleteValues`, `GM_addValueChangeListener`, `GM_removeValueChangeListener`, `GM_registerMenuCommand`, `GM_unregisterMenuCommand`, `GM_openInTab`, `GM_xmlhttpRequest`, `GM_download`, `GM_notification`, `GM_setClipboard`, `GM_getResourceText`, `GM_getResourceURL`, `GM_getTab`, `GM_saveTab`, `GM_getTabs`, `GM_cookie`, `GM_log`, `GM_info`, and `window.onurlchange`.
 
+### Toolbar badge
+
+`GM.setBadge(text)` or `GM.setBadge({ text, title, color })` shows a short status (up to 4 characters) on the TamperDonkey toolbar icon for the tab the script runs in; `title` appears in the icon's tooltip and in the popup. `GM_setBadge` is the same function. It needs no `@grant`, works in page-world scripts too, and is cleared when the tab navigates. Only the top frame can set it. Other managers do not have this function, so guard the call: `if (typeof GM !== 'undefined' && GM.setBadge) GM.setBadge('3');`
+
 ### Differences from other managers
 
 - **No `@grant`, or `@grant none`**: the script runs in the page's own JavaScript world and gets no GM functions except `GM_info`.

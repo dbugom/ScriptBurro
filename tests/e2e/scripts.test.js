@@ -1,6 +1,6 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { launch, serve, PAGE, mark } from './helpers.mjs';
+import { launch, serve, PAGE, mark, until } from './helpers.mjs';
 
 let b;
 let web;
@@ -21,6 +21,8 @@ before(async () => {
     '/note.txt': (req, res) => { res.writeHead(200, { 'content-type': 'text/plain' }); res.end('resource text'); },
     '/opened': PAGE,
     '/misc': PAGE,
+    '/badge-page': PAGE,
+    '/badge-iso': PAGE,
     '/hello.user.js': `${header('Hello from URL', ['@match http://127.0.0.1/*', '@grant none'])}document.documentElement.dataset.hello = '1';`
   });
   b = await launch();
@@ -301,5 +303,53 @@ test('a context-menu script is not injected on load but is offered for the page'
   assert.ok(forTab.scripts.some((x) => x.id === s.id));
   await b.call('scripts.run', { id: s.id, tabId: tab.id });
   assert.equal(await mark(p, 'ctx'), '1');
+  await p.close();
+});
+
+test('GM.setBadge shows a status on the toolbar icon, from page-world and isolated scripts', async () => {
+  const badge = (tabId) => b.dashboard.evaluate(async (id) => ({ text: await chrome.action.getBadgeText({ tabId: id }), title: await chrome.action.getTitle({ tabId: id }) }), tabId);
+  const pageWorld = await b.call('scripts.install', {
+    source: `${header('BadgePage', ['@match http://127.0.0.1/badge-page', '@grant none', '@run-at document-start'])}
+document.documentElement.dataset.badgeworld = String(window.pageSecret === undefined) + '|' + typeof GM.setBadge;
+window.addEventListener('load', () => { GM.setBadge({ text: '2/7', title: '2 strings found, 7 replaced' }); document.documentElement.dataset.badgesent = String(window.pageSecret); });`
+  });
+  await b.call('scripts.install', {
+    source: `${header('BadgeIso', ['@match http://127.0.0.1/badge-iso', '@grant GM_getValue'])}
+GM_setBadge('ok'); document.documentElement.dataset.badgeiso = '1';`
+  });
+
+  const p = await b.context.newPage();
+  await p.goto(`${web.origin}/badge-page`);
+  // Still a page-world script: it sees the page's own variable.
+  assert.equal(await mark(p, 'badgesent'), 'from-page');
+  const tab = (await b.call('tabs.list')).find((t) => t.url.endsWith('/badge-page'));
+  const shown = await until(async () => { const x = await badge(tab.id); return x.text ? x : null; });
+  assert.equal(shown.text, '2/7');
+  assert.match(shown.title, /BadgePage: 2 strings found, 7 replaced/);
+  const forTab = await b.call('scripts.forTab', { tabId: tab.id, url: tab.url });
+  assert.deepEqual(forTab.badges[pageWorld.id], { text: '2/7', title: '2 strings found, 7 replaced' });
+
+  // Leaving the page clears the badge and its tooltip.
+  await p.goto(`${web.origin}/other`);
+  await until(async () => (await badge(tab.id)).text === '');
+  assert.deepEqual((await b.call('scripts.forTab', { tabId: tab.id, url: `${web.origin}/other` })).badges, {});
+
+  await p.goto(`${web.origin}/badge-iso`);
+  await mark(p, 'badgeiso');
+  assert.equal((await until(async () => { const x = await badge(tab.id); return x.text ? x : null; })).text, 'ok');
+  await p.close();
+});
+
+test('a page cannot set the badge by guessing: the event name is private to the script', async () => {
+  const p = await b.context.newPage();
+  await p.goto(`${web.origin}/badge-page`);
+  await mark(p, 'badgesent');
+  const tab = (await b.call('tabs.list')).find((t) => t.url.endsWith('/badge-page'));
+  await until(async () => (await b.dashboard.evaluate((id) => chrome.action.getBadgeText({ tabId: id }), tab.id)) === '2/7');
+  await p.evaluate(() => {
+    for (const name of ['td-badge', 'td-badge-undefined', 'tamperdonkey:badge']) document.dispatchEvent(new CustomEvent(name, { detail: JSON.stringify({ text: 'HACK' }) }));
+  });
+  await new Promise((r) => setTimeout(r, 400));
+  assert.equal(await b.dashboard.evaluate((id) => chrome.action.getBadgeText({ tabId: id }), tab.id), '2/7');
   await p.close();
 });

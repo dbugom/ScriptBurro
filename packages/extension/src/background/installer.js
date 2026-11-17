@@ -99,6 +99,7 @@ export async function install({ source, url = '', id = null, enabled, by = 'user
   const script = {
     id: previous?.id || newId(),
     token: previous?.token || newToken(),
+    badgeKey: previous?.badgeKey || newToken().slice(0, 24),
     source,
     meta,
     requires,

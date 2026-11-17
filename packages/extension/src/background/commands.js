@@ -6,7 +6,7 @@ import {
 } from './store.js';
 import { syncRegistrations, userScriptsAvailable, runInTab } from './registrar.js';
 import { install, prepare, findExisting, findUpdate, fetchText } from './installer.js';
-import { broadcastValue, clickMenu, menusForTab } from './gm.js';
+import { broadcastValue, clickMenu, menusForTab, badgesForTab } from './gm.js';
 import { bridgeStatus, restartBridge } from './bridge.js';
 import { listPending, resolvePending } from './external.js';
 import { scheduleUpdates } from './updater.js';
@@ -212,7 +212,7 @@ export const COMMANDS = {
       if (s.trashedAt) continue;
       if (s.meta.runAt === 'context-menu' || scriptMatchesUrl(s.meta, url, await blacklistOverrides(s))) out.push(summary(s));
     }
-    return { scripts: out, menu: await menusForTab(tabId), userScripts: userScriptsAvailable() };
+    return { scripts: out, menu: await menusForTab(tabId), badges: await badgesForTab(tabId), userScripts: userScriptsAvailable() };
   },
 
   'menu.click': async ({ tabId, id }) => clickMenu(tabId, id),
