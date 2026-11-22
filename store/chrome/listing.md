@@ -40,7 +40,7 @@ No account, no analytics, no ads. Your scripts and their data stay in your brows
 Compatibility
 Supports the common userscript header keys and the GM_* functions, including the GM.* promise forms. Scripts that use @grant run isolated from the page; scripts that need the page's own JavaScript variables should use "@grant none".
 
-Open source under the GNU GPL v3: https://github.com/dbugom/TamperDonkey
+Open source under the GNU GPL v3: https://github.com/dbugom/ScriptBurro
 ```
 
 **Images** (in this folder):
@@ -90,7 +90,7 @@ The store icon (128x128) is taken from the zip.
 
 Tick the three certification boxes only if they are true for you (no selling of data, no use unrelated to the single purpose, no use for creditworthiness or lending).
 
-**Privacy policy URL:** `https://github.com/dbugom/TamperDonkey/blob/main/PRIVACY.md`
+**Privacy policy URL:** `https://github.com/dbugom/ScriptBurro/blob/main/PRIVACY.md`
 
 This link only works for reviewers if the repository is public. If it is private, publish `PRIVACY.md` somewhere public (for example GitHub Pages) and use that address.
 

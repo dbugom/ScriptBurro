@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS = {
 
 export const NEW_SCRIPT_TEMPLATE = `// ==UserScript==
 // @name         New script
-// @namespace    https://github.com/dbugom/TamperDonkey
+// @namespace    https://github.com/dbugom/ScriptBurro
 // @version      0.1
 // @description  What does this script do?
 // @match        https://example.com/*

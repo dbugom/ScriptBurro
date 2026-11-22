@@ -1,6 +1,6 @@
 # scriptburro-mcp
 
-MCP server for [ScriptBurro](https://github.com/dbugom/TamperDonkey). It lets MCP clients list, install, edit and run userscripts in your browser.
+MCP server for [ScriptBurro](https://github.com/dbugom/ScriptBurro). It lets MCP clients list, install, edit and run userscripts in your browser.
 
 ```bash
 node src/cli.js --help

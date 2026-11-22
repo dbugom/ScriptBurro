@@ -44,4 +44,4 @@ A userscript is code written by a third party that you chose to install. It runs
 
 ## Changes and contact
 
-Changes to this policy are published in this file. Questions and reports: https://github.com/dbugom/TamperDonkey/issues
+Changes to this policy are published in this file. Questions and reports: https://github.com/dbugom/ScriptBurro/issues
