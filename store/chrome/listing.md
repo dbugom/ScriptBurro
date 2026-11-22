@@ -2,11 +2,11 @@
 
 Copy these into the Developer Dashboard. Sizes and field names were checked against the Chrome Web Store documentation on 14 November 2026.
 
-Upload file: `packages/extension/dist/tamperdonkey-chrome-<version>.zip` (made by `npm run package`).
+Upload file: `packages/extension/dist/scriptburro-chrome-<version>.zip` (made by `npm run package`).
 
 ## Store listing tab
 
-**Name** (from the manifest): TamperDonkey
+**Name** (from the manifest): ScriptBurro
 
 **Summary** (from the manifest description, 132 characters max):
 
@@ -19,9 +19,9 @@ Upload file: `packages/extension/dist/tamperdonkey-chrome-<version>.zip` (made b
 **Description:**
 
 ```
-TamperDonkey installs and runs userscripts: small programs that change how the websites you choose look and behave.
+ScriptBurro installs and runs userscripts: small programs that change how the websites you choose look and behave.
 
-IMPORTANT: after installing, open chrome://extensions, click Details on TamperDonkey and turn on "Allow User Scripts". Chrome requires this switch before any userscript manager can run scripts. The dashboard reminds you until it is on.
+IMPORTANT: after installing, open chrome://extensions, click Details on ScriptBurro and turn on "Allow User Scripts". Chrome requires this switch before any userscript manager can run scripts. The dashboard reminds you until it is on.
 
 What you get
 • A review page before every install and every update. It shows where the script runs, what it is allowed to do, and the exact changes since the version you have.
@@ -60,7 +60,7 @@ The store icon (128x128) is taken from the zip.
 
 **Single purpose:**
 
-> TamperDonkey manages and runs userscripts that the user installs, on the web pages those scripts name.
+> ScriptBurro manages and runs userscripts that the user installs, on the web pages those scripts name.
 
 **Permission justifications:**
 
@@ -81,7 +81,7 @@ The store icon (128x128) is taken from the zip.
 
 **Remote code:** choose **Yes, I am using remote code**.
 
-> Justification: TamperDonkey is a userscript manager. The userscripts a user installs are executed only through the chrome.userScripts API, which the Chrome Web Store policy names as a permitted way to run such code. The extension's own logic is fully contained in the package; it loads no remote scripts for itself.
+> Justification: ScriptBurro is a userscript manager. The userscripts a user installs are executed only through the chrome.userScripts API, which the Chrome Web Store policy names as a permitted way to run such code. The extension's own logic is fully contained in the package; it loads no remote scripts for itself.
 
 **Data usage:** my reading is that none of the listed data types is collected, because the extension sends nothing to the developer or to any service the developer runs. Read each checkbox yourself before certifying; you are the one making the declaration. Two behaviours to keep in mind while you do:
 
@@ -103,13 +103,13 @@ This link only works for reviewers if the repository is public. If it is private
 
 ```
 No account is needed.
-1. After installing, open chrome://extensions > TamperDonkey > Details and turn on "Allow User Scripts".
-2. Open the TamperDonkey dashboard (extension icon > Dashboard) and click "New script". Change the @match line to https://example.com/* and add the line: document.title = 'TamperDonkey works';  Click Save.
-3. Open https://example.com/ . The tab title changes to "TamperDonkey works".
+1. After installing, open chrome://extensions > ScriptBurro > Details and turn on "Allow User Scripts".
+2. Open the ScriptBurro dashboard (extension icon > Dashboard) and click "New script". Change the @match line to https://example.com/* and add the line: document.title = 'ScriptBurro works';  Click Save.
+3. Open https://example.com/ . The tab title changes to "ScriptBurro works".
 The MCP bridge and the AI helper are optional, off by default, and need software or an API key from the user; they are not required to test the extension.
 ```
 
 ## Before you press Submit
 
-- Decide on the name. "TamperDonkey" is close to the name of an existing store extension; a different name avoids a possible impersonation or trademark complaint.
+- Decide on the name. "ScriptBurro" is close to the name of an existing store extension; a different name avoids a possible impersonation or trademark complaint.
 - Try `GM_notification`, `GM_download` and `GM_setClipboard` by hand; they have no automated test.

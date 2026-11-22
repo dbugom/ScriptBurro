@@ -1,8 +1,8 @@
-# TamperDonkey
+# ScriptBurro
 
 An open-source userscript manager for Chrome and Firefox (Manifest V3), with an MCP bridge so AI tools can manage your scripts.
 
-TamperDonkey starts from the last open-source release of Tampermonkey (version 2.9, GPLv3, by Jan Biniok). That code targets browser APIs that no longer exist, so the extension here is a rewrite: the metadata parser and URL matching are ported, everything else is new. It is not affiliated with Tampermonkey.
+ScriptBurro starts from the last open-source release of Tampermonkey (version 2.9, GPLv3, by Jan Biniok). That code targets browser APIs that no longer exist, so the extension here is a rewrite: the metadata parser and URL matching are ported, everything else is new. It is not affiliated with Tampermonkey.
 
 ## What it does
 
@@ -12,7 +12,7 @@ TamperDonkey starts from the last open-source release of Tampermonkey (version 2
 - Shows a review page before every install and update, with the permissions in plain words and a diff against the installed version.
 - Keeps each script's stored values separate, with an editor for them.
 - Dashboard with search, tags, bulk actions, trash with restore, zip export and import, dark theme.
-- MCP server (`tamperdonkey-mcp`) and a message API for other extensions.
+- MCP server (`scriptburro-mcp`) and a message API for other extensions.
 - Optional AI helper in the editor (generate, explain, fix), using your own Claude API key.
 
 ## Build
@@ -37,7 +37,7 @@ The builds land in `packages/extension/dist/chrome` and `packages/extension/dist
 ### Load it in Firefox (142 or newer)
 
 1. Open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on** and pick `packages/extension/dist/firefox/manifest.json`.
-2. Open the TamperDonkey dashboard and use the two buttons in the banner to allow user scripts and access to web pages.
+2. Open the ScriptBurro dashboard and use the two buttons in the banner to allow user scripts and access to web pages.
 
 The Firefox build passes Mozilla's add-on linter. It has not been run in Firefox yet; see [Status](#status).
 
@@ -53,7 +53,7 @@ Functions, each also available in promise form under `GM.*`:
 
 ### Toolbar badge
 
-`GM.setBadge(text)` or `GM.setBadge({ text, title, color })` shows a short status (up to 4 characters) on the TamperDonkey toolbar icon for the tab the script runs in; `title` appears in the icon's tooltip and in the popup. `GM_setBadge` is the same function. It needs no `@grant`, works in page-world scripts too, and is cleared when the tab navigates. Only the top frame can set it. Other managers do not have this function, so guard the call: `if (typeof GM !== 'undefined' && GM.setBadge) GM.setBadge('3');`
+`GM.setBadge(text)` or `GM.setBadge({ text, title, color })` shows a short status (up to 4 characters) on the ScriptBurro toolbar icon for the tab the script runs in; `title` appears in the icon's tooltip and in the popup. `GM_setBadge` is the same function. It needs no `@grant`, works in page-world scripts too, and is cleared when the tab navigates. Only the top frame can set it. Other managers do not have this function, so guard the call: `if (typeof GM !== 'undefined' && GM.setBadge) GM.setBadge('3');`
 
 ### Differences from other managers
 
@@ -61,7 +61,7 @@ Functions, each also available in promise form under `GM.*`:
 - **Any other `@grant`**: the script runs in an isolated world. It shares the DOM with the page but not the page's JavaScript variables, and `unsafeWindow` is that isolated window. A script that needs page variables must use `@grant none`.
 - **`GM_xmlhttpRequest` and `GM_download`** only reach hosts listed in `@connect` (plus hosts you add in the script's settings), and only over https unless you allow http in Settings. A redirect to a host outside `@connect` is followed by the browser, but its response is withheld from the script. `onprogress` is not reported, and headers the browser reserves (`Cookie`, `Origin`, `Referer`, `User-Agent`) cannot be set.
 - **`GM_cookie`** is limited to the page the script runs on and does not show HttpOnly cookies.
-- **`GM_cookie` and `GM_download`** need the browser's optional `cookies` and `downloads` permissions. TamperDonkey asks for them when you install or save a script that uses these functions; you can also allow them later on the script's Settings tab.
+- **`GM_cookie` and `GM_download`** need the browser's optional `cookies` and `downloads` permissions. ScriptBurro asks for them when you install or save a script that uses these functions; you can also allow them later on the script's Settings tab.
 - **`@require` and `@resource`** are downloaded at install time. A `#sha256=…` (or sha384, sha512) suffix is verified.
 - **`.tld`** in `@include` uses an approximation, not the full public-suffix list.
 
@@ -72,7 +72,7 @@ A browser extension cannot open a port, so a small companion runs on your comput
 1. Add the companion to your MCP client. For Claude Code, from this repository:
 
    ```bash
-   claude mcp add tamperdonkey -- node /absolute/path/to/packages/mcp/src/cli.js
+   claude mcp add scriptburro -- node /absolute/path/to/packages/mcp/src/cli.js
    ```
 
    Any client that takes a command works the same way. For clients that want a URL, run `node packages/mcp/src/cli.js --http` and use `http://127.0.0.1:8766/mcp` with the pairing token as a Bearer token.
@@ -83,7 +83,7 @@ A browser extension cannot open a port, so a small companion runs on your comput
    node packages/mcp/src/cli.js --token
    ```
 
-3. In the browser, open TamperDonkey > **Integrations**, turn on **Connect to the companion** and paste the token.
+3. In the browser, open ScriptBurro > **Integrations**, turn on **Connect to the companion** and paste the token.
 
 Tools: `status`, `list_scripts`, `get_script`, `install_script`, `update_script`, `set_enabled`, `delete_script`, `list_tabs`, `run_script_on_tab`, `get_values`, `set_value`.
 
@@ -96,7 +96,7 @@ The companion listens on `127.0.0.1` only, refuses connections that come from we
 Add the other extension's id under Integrations, then from that extension:
 
 ```js
-const reply = await chrome.runtime.sendMessage(TAMPERDONKEY_ID, { cmd: 'scripts.list', args: {} });
+const reply = await chrome.runtime.sendMessage(SCRIPTBURRO_ID, { cmd: 'scripts.list', args: {} });
 // reply is { ok: true, result } or { ok: false, error }
 ```
 
@@ -122,7 +122,7 @@ Layout:
 
 - `packages/core`: metadata parser, URL matching, grant and connect rules. No browser APIs.
 - `packages/extension`: the extension. `src/background` (service worker), `src/inject` (code that runs with each userscript), `src/ui` (dashboard, popup, review page).
-- `packages/mcp`: the `tamperdonkey-mcp` companion.
+- `packages/mcp`: the `scriptburro-mcp` companion.
 - `tests/e2e`: browser tests.
 
 ## Publishing to the Chrome Web Store
@@ -131,7 +131,7 @@ Layout:
 npm run package
 ```
 
-This builds both targets and writes `packages/extension/dist/tamperdonkey-chrome-<version>.zip` (and the Firefox one). Everything else the store asks for is in `store/chrome/`: `listing.md` has the listing text, a justification for each permission, the remote-code answer and the reviewer test steps, next to five 1280x800 screenshots and the 440x280 promo tile. `node store/chrome/make-images.mjs` regenerates the images. The privacy policy is `PRIVACY.md`.
+This builds both targets and writes `packages/extension/dist/scriptburro-chrome-<version>.zip` (and the Firefox one). Everything else the store asks for is in `store/chrome/`: `listing.md` has the listing text, a justification for each permission, the remote-code answer and the reviewer test steps, next to five 1280x800 screenshots and the 440x280 promo tile. `node store/chrome/make-images.mjs` regenerates the images. The privacy policy is `PRIVACY.md`.
 
 Publishing needs a Chrome Web Store developer account (one-time registration fee, 2-step verification on the Google account). In the Developer Dashboard choose **Add new item**, upload the zip, fill the Store listing, Privacy, Distribution and Test instructions tabs from `listing.md`, then **Submit for review**.
 

@@ -1,6 +1,6 @@
 /* global __TD_RUNTIME__, __TD_VERSION__ */
 import { api } from '../shared/browser.js';
-import { compileRules, resolveGrants, toRegistration, getHeader } from '@tamperdonkey/core';
+import { compileRules, resolveGrants, toRegistration, getHeader } from '@scriptburro/core';
 import { allScripts, getSettings, putScript, newToken } from './store.js';
 
 const RUN_AT = {

@@ -19,7 +19,7 @@ async function render() {
     }), h('span'));
 
   fill(app,
-    h('header', null, h('img', { src: 'icons/icon-48.png', alt: '' }), h('strong', null, 'TamperDonkey'),
+    h('header', null, h('img', { src: 'icons/icon-48.png', alt: '' }), h('strong', null, 'ScriptBurro'),
       h('button', { onClick: () => { openDashboard(); window.close(); } }, 'Dashboard')),
     !data.userScripts && h('section', null, accessBanner(render)),
     h('section', null,

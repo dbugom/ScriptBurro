@@ -1,5 +1,5 @@
 {
-  "name": "tamperdonkey",
+  "name": "scriptburro",
   "private": true,
   "version": "0.2.0",
   "description": "Open-source userscript manager for Chrome and Firefox (Manifest V3), with an MCP bridge.",

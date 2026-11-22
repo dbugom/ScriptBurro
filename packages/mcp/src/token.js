@@ -5,12 +5,12 @@ import crypto from 'node:crypto';
 
 export function tokenFile() {
   const base = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config');
-  return path.join(base, 'tamperdonkey', 'token');
+  return path.join(base, 'scriptburro', 'token');
 }
 
 /** Returns the pairing token, creating it on first use (readable by the owner only). */
 export function loadToken() {
-  if (process.env.TAMPERDONKEY_TOKEN) return process.env.TAMPERDONKEY_TOKEN;
+  if (process.env.SCRIPTBURRO_TOKEN) return process.env.SCRIPTBURRO_TOKEN;
   const file = tokenFile();
   try {
     const t = fs.readFileSync(file, 'utf8').trim();

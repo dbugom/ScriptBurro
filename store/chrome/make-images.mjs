@@ -79,7 +79,7 @@ await t.setContent(`<style>
   svg{width:92px;height:92px}
   h1{margin:0;font-size:34px;font-weight:700;letter-spacing:-.01em}
   p{margin:0;font-size:16px;opacity:.9}
-</style>${icon.replace('fill="#0d6b58"/>', 'fill="#0a5646"/>')}<h1>TamperDonkey</h1><p>Userscripts, with real permissions</p>`);
+</style>${icon.replace('fill="#0d6b58"/>', 'fill="#0a5646"/>')}<h1>ScriptBurro</h1><p>Userscripts, with real permissions</p>`);
 await t.screenshot({ path: path.join(out, 'promo-small-440x280.png') });
 await t.setViewportSize({ width: 128, height: 128 });
 await t.setContent(`<style>html,body{margin:0;background:transparent}svg{display:block;width:96px;height:96px;margin:16px}</style>${icon}`);

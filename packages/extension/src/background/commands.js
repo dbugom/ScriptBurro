@@ -1,6 +1,6 @@
 /* global __TD_VERSION__ */
 import { api, isFirefox } from '../shared/browser.js';
-import { scriptMatchesUrl, resolveGrants, parseUserscript } from '@tamperdonkey/core';
+import { scriptMatchesUrl, resolveGrants, parseUserscript } from '@scriptburro/core';
 import {
   allScripts, getScript, putScript, removeScript, getValues, setValues, updateValues, getSettings, setSettings, getLog, addLog
 } from './store.js';
@@ -262,7 +262,7 @@ export const COMMANDS = {
         overrides: s.overrides, autoUpdate: s.autoUpdate, values: await getValues(s.id)
       });
     }
-    return { format: 'tamperdonkey-backup', version: 1, created: new Date().toISOString(), scripts };
+    return { format: 'scriptburro-backup', version: 1, created: new Date().toISOString(), scripts };
   },
 
   'backup.import': async ({ scripts }) => {

@@ -64,7 +64,7 @@ function zip(files) {
 const out = path.join(root, 'dist');
 for (const target of ['chrome', 'firefox']) {
   const files = walk(path.join(out, target));
-  const file = path.join(out, `tamperdonkey-${target}-${version}.zip`);
+  const file = path.join(out, `scriptburro-${target}-${version}.zip`);
   fs.writeFileSync(file, zip(files));
   console.log(`${path.relative(process.cwd(), file)}  ${files.length} files, ${(fs.statSync(file).size / 1024).toFixed(0)} KB`);
 }

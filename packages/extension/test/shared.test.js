@@ -6,12 +6,12 @@ import { diffLines } from '../src/shared/diff.js';
 import { extractCode } from '../src/ui/ai-extract.js';
 
 test('crc32 matches the reference implementation', () => {
-  const data = new TextEncoder().encode('TamperDonkey ✓');
+  const data = new TextEncoder().encode('ScriptBurro ✓');
   assert.equal(crc32(data), zlib.crc32(data));
 });
 
 test('zip round trip keeps names and UTF-8 text', async () => {
-  const files = [{ name: 'a.user.js', text: '// ==UserScript==\n// @name Ünï\n' }, { name: 'tamperdonkey.json', text: '{"scripts":[]}' }];
+  const files = [{ name: 'a.user.js', text: '// ==UserScript==\n// @name Ünï\n' }, { name: 'scriptburro.json', text: '{"scripts":[]}' }];
   assert.deepEqual(await unzipFiles(zipFiles(files)), files);
 });
 

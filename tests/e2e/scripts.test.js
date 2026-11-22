@@ -63,7 +63,7 @@ test('@grant none runs in the page world; a granted script is isolated from it',
   });
   const p = await b.context.newPage();
   await p.goto(`${web.origin}/`);
-  assert.equal(await mark(p, 'pw'), 'from-page|undefined|TamperDonkey');
+  assert.equal(await mark(p, 'pw'), 'from-page|undefined|ScriptBurro');
   // Only the granted function exists, and the page's variable is not visible.
   assert.equal(await mark(p, 'sb'), 'undefined|function|undefined|undefined');
   await p.close();
@@ -256,7 +256,7 @@ if (location.search === '?open') GM_openInTab('/opened', { active: false });`
   await p.goto(`${web.origin}/misc`);
   assert.equal(await mark(p, 'body'), 'true');
   assert.equal(await mark(p, 'res'), 'resource text|data:text/plain');
-  assert.equal(await mark(p, 'info'), 'Misc|1.0|TamperDonkey');
+  assert.equal(await mark(p, 'info'), 'Misc|1.0|ScriptBurro');
   assert.equal(await mark(p, 'tab'), '1');
   assert.equal(await mark(p, 'promise'), '[1,2]|a');
   // The browser permission for cookies is optional and has not been granted yet.
@@ -347,7 +347,7 @@ test('a page cannot set the badge by guessing: the event name is private to the 
   const tab = (await b.call('tabs.list')).find((t) => t.url.endsWith('/badge-page'));
   await until(async () => (await b.dashboard.evaluate((id) => chrome.action.getBadgeText({ tabId: id }), tab.id)) === '2/7');
   await p.evaluate(() => {
-    for (const name of ['td-badge', 'td-badge-undefined', 'tamperdonkey:badge']) document.dispatchEvent(new CustomEvent(name, { detail: JSON.stringify({ text: 'HACK' }) }));
+    for (const name of ['td-badge', 'td-badge-undefined', 'scriptburro:badge']) document.dispatchEvent(new CustomEvent(name, { detail: JSON.stringify({ text: 'HACK' }) }));
   });
   await new Promise((r) => setTimeout(r, 400));
   assert.equal(await b.dashboard.evaluate((id) => chrome.action.getBadgeText({ tabId: id }), tab.id), '2/7');

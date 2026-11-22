@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-const WRITE_NOTE = ' The user may be asked to confirm this in the browser, so the call can take a while; it fails if they refuse or if changes from outside tools are turned off in TamperDonkey.';
+const WRITE_NOTE = ' The user may be asked to confirm this in the browser, so the call can take a while; it fails if they refuse or if changes from outside tools are turned off in ScriptBurro.';
 
 /**
  * Builds the MCP server. Every tool is a thin wrapper around one extension command;
@@ -9,7 +9,7 @@ const WRITE_NOTE = ' The user may be asked to confirm this in the browser, so th
  * @param {{call: (cmd: string, args?: object, client?: string) => Promise<any>}} bridge
  */
 export function createServer(bridge, { version = '0.1.0' } = {}) {
-  const server = new McpServer({ name: 'tamperdonkey', version });
+  const server = new McpServer({ name: 'scriptburro', version });
   const clientName = () => server.server.getClientVersion()?.name || 'client';
 
   const tool = (name, { title, description, input = {}, readOnly = false, destructive = false }, cmd, map = (a) => a) => {
@@ -31,7 +31,7 @@ export function createServer(bridge, { version = '0.1.0' } = {}) {
   const id = z.string().describe('Script id as returned by list_scripts');
 
   tool('status', {
-    title: 'TamperDonkey status',
+    title: 'ScriptBurro status',
     description: 'Shows whether the browser extension is connected, its version, and whether the browser currently lets it run user scripts.',
     readOnly: true
   }, 'status');

@@ -1,5 +1,5 @@
 /*
- * TamperDonkey page runtime. This file is not a module: the build minifies it and the
+ * ScriptBurro page runtime. This file is not a module: the build minifies it and the
  * background prepends it to every registered userscript. It defines one function,
  * __td_boot(cfg, body), which checks the URL rules, builds the GM API the script was
  * granted and then calls the script.
@@ -23,16 +23,16 @@ function __td_boot(cfg, body) {
   var info = {
     script: cfg.meta,
     scriptMetaStr: cfg.metaStr,
-    scriptHandler: 'TamperDonkey',
+    scriptHandler: 'ScriptBurro',
     version: cfg.handlerVersion,
     injectInto: cfg.sandbox ? 'content' : 'page'
   };
   var scope = { GM_info: info, unsafeWindow: win, GM: { info: info } };
 
   // GM.setBadge(text) or GM.setBadge({ text, title, color }): shows a short status on the
-  // TamperDonkey toolbar icon for this tab. Available to every script, with or without
+  // ScriptBurro toolbar icon for this tab. Available to every script, with or without
   // @grant. A page-world script has no channel to the extension, so it hands the request
-  // to a small relay that TamperDonkey runs next to it in an isolated world.
+  // to a small relay that ScriptBurro runs next to it in an isolated world.
   var lastBadge = null;
   var badgeArgs = function (o) {
     o = o !== null && typeof o === 'object' ? o : { text: o };
@@ -59,7 +59,7 @@ function __td_boot(cfg, body) {
       try {
         body.apply(win, cfg.params.map(function (n) { return scope[n]; }));
       } catch (e) {
-        console.error('[TamperDonkey] "' + cfg.meta.name + '" failed:', e);
+        console.error('[ScriptBurro] "' + cfg.meta.name + '" failed:', e);
       }
     };
     if (cfg.runAt === 'document-body' && !doc.body) {
@@ -82,11 +82,11 @@ function __td_boot(cfg, body) {
 
   function send(method, args) {
     return rawSend({ td: cfg.token, m: method, a: args || [] }).then(function (r) {
-      if (!r || !r.ok) throw new Error((r && r.error) || 'TamperDonkey: no response from the extension');
+      if (!r || !r.ok) throw new Error((r && r.error) || 'ScriptBurro: no response from the extension');
       return r.value;
     });
   }
-  function quiet(p) { p.catch(function (e) { console.warn('[TamperDonkey]', e.message); }); }
+  function quiet(p) { p.catch(function (e) { console.warn('[ScriptBurro]', e.message); }); }
   function clone(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
 
   function toB64(buf) {
@@ -111,7 +111,7 @@ function __td_boot(cfg, body) {
     return valuesReady;
   }
   function need() {
-    if (!values) throw new Error('TamperDonkey: values are not loaded yet');
+    if (!values) throw new Error('ScriptBurro: values are not loaded yet');
   }
   function notify(key, oldV, newV, remote) {
     Object.keys(listeners).forEach(function (id) {
@@ -340,7 +340,7 @@ function __td_boot(cfg, body) {
       .then(function (tabId) {
         tabsOpened[tabId] = handle;
         handle.close = function () { quiet(send('closeTab', [tabId])); };
-      }).catch(function (e) { console.warn('[TamperDonkey]', e.message); });
+      }).catch(function (e) { console.warn('[ScriptBurro]', e.message); });
     return handle;
   }
   function notification(a, b, c, d) {
@@ -348,7 +348,7 @@ function __td_boot(cfg, body) {
     var ondone = typeof a === 'object' && typeof b === 'function' ? b : o.ondone;
     send('notify', [{ text: String(o.text || ''), title: o.title ? String(o.title) : cfg.meta.name, image: o.image, timeout: Number(o.timeout) || 0, url: o.url }])
       .then(function (id) { notes[id] = { onclick: o.onclick, ondone: ondone }; })
-      .catch(function (e) { console.warn('[TamperDonkey]', e.message); });
+      .catch(function (e) { console.warn('[ScriptBurro]', e.message); });
   }
   function setClipboard(text) {
     text = String(text);
@@ -373,7 +373,7 @@ function __td_boot(cfg, body) {
     return r ? r.dataUrl : null;
   }
   function cb(p, fn) {
-    p.then(function (v) { if (typeof fn === 'function') fn(v); }, function (e) { console.warn('[TamperDonkey]', e.message); });
+    p.then(function (v) { if (typeof fn === 'function') fn(v); }, function (e) { console.warn('[ScriptBurro]', e.message); });
   }
   var cookie = {
     list: function (d, fn) { send('cookieList', [d || {}, location.href]).then(function (v) { fn(v, null); }, function (e) { fn(null, e.message); }); },
@@ -475,6 +475,6 @@ function __td_boot(cfg, body) {
   }
 
   // Synchronous GM_getValue needs the stored values before the script starts.
-  if (cfg.preloadValues) ensureValues().then(start, function (e) { console.error('[TamperDonkey]', e.message); start(); });
+  if (cfg.preloadValues) ensureValues().then(start, function (e) { console.error('[ScriptBurro]', e.message); start(); });
   else start();
 }

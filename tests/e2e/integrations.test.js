@@ -48,7 +48,7 @@ before(async () => {
   await mcp.connect(new StdioClientTransport({
     command: process.execPath,
     args: [CLI, '--port', String(port)],
-    env: { ...process.env, TAMPERDONKEY_TOKEN: TOKEN },
+    env: { ...process.env, SCRIPTBURRO_TOKEN: TOKEN },
     stderr: 'ignore'
   }));
 });
@@ -137,7 +137,7 @@ test('another extension is ignored until its id is on the allow list', async () 
   const p = await b.context.newPage();
   // Find the helper extension's id from chrome://extensions.
   await p.goto('chrome://extensions');
-  const otherId = await p.evaluate(async () => (await chrome.developerPrivate.getExtensionsInfo()).find((e) => e.name === 'TamperDonkey test caller').id);
+  const otherId = await p.evaluate(async () => (await chrome.developerPrivate.getExtensionsInfo()).find((e) => e.name === 'ScriptBurro test caller').id);
   await p.goto(`chrome-extension://${otherId}/page.html`);
   const send = (cmd, args) => p.evaluate(([id, c, a]) => chrome.runtime.sendMessage(id, { cmd: c, args: a }), [b.id, cmd, args]);
 

@@ -49,7 +49,7 @@ function frame(active, ...body) {
   const pendingCount = status?.pending || 0;
   fill(app,
     h('div', { class: 'top' }, h('div', { class: 'top-in' },
-      h('div', { class: 'brand' }, h('img', { src: 'icons/icon-48.png', alt: '' }), 'TamperDonkey'),
+      h('div', { class: 'brand' }, h('img', { src: 'icons/icon-48.png', alt: '' }), 'ScriptBurro'),
       h('nav', { 'aria-label': 'Sections' }, ROUTES.map(([id, label]) => h('a', {
         href: `#${id}`, class: active === id ? 'active' : '', 'aria-current': active === id ? 'page' : null
       }, label, id === 'integrations' && pendingCount > 0 && h('span', { class: 'pill warn count' }, pendingCount)))))),
@@ -143,7 +143,7 @@ async function viewScripts() {
     let items;
     if (/\.zip$/i.test(file.name)) {
       const files = await unzipFiles(new Uint8Array(await file.arrayBuffer()));
-      const manifest = files.find((f) => f.name === 'tamperdonkey.json');
+      const manifest = files.find((f) => f.name === 'scriptburro.json' || f.name === 'tamperdonkey.json'); // older backups
       const extra = manifest ? JSON.parse(manifest.text).scripts : [];
       items = files.filter((f) => /\.user\.js$/i.test(f.name)).map((f) => ({ source: f.text, ...(extra.find((x) => x.file === f.name) || {}) }));
     } else if (/\.json$/i.test(file.name)) {
@@ -170,8 +170,8 @@ async function viewScripts() {
       files.push({ name, text: s.source });
       meta.push({ file: name, enabled: s.enabled, origin: s.origin, tags: s.tags, overrides: s.overrides, values: s.values });
     }
-    files.push({ name: 'tamperdonkey.json', text: JSON.stringify({ format: data.format, version: data.version, created: data.created, scripts: meta }, null, 2) });
-    saveFile(`tamperdonkey-backup-${data.created.slice(0, 10)}.zip`, zipFiles(files), 'application/zip');
+    files.push({ name: 'scriptburro.json', text: JSON.stringify({ format: data.format, version: data.version, created: data.created, scripts: meta }, null, 2) });
+    saveFile(`scriptburro-backup-${data.created.slice(0, 10)}.zip`, zipFiles(files), 'application/zip');
   });
 
   const installUrl = () => {
@@ -280,7 +280,7 @@ async function viewEditor(id, seedOrigin) {
     const ov = s.overrides || { includes: [], matches: [], excludes: [] };
     fill(panel,
       missing.length > 0 && h('div', { class: 'banner', role: 'alert' },
-        h('div', null, h('strong', null, 'This script needs one more permission. '), `It asks to ${missing.map((m) => PERMISSION_LABEL[m]).join(' and ')}, and the browser has not allowed TamperDonkey to do that yet.`),
+        h('div', null, h('strong', null, 'This script needs one more permission. '), `It asks to ${missing.map((m) => PERMISSION_LABEL[m]).join(' and ')}, and the browser has not allowed ScriptBurro to do that yet.`),
         h('button', { class: 'primary', id: 'grant-permission', onClick: () => guard(async () => {
           const left = await requestForGrants(s.grants);
           toast(left.length ? 'Permission was not granted' : 'Allowed. Reload open pages.', left.length ? 'error' : 'info');
@@ -454,7 +454,7 @@ async function viewSettings() {
       field('Keep trashed scripts for', h('select', { 'aria-label': 'Trash retention', onChange: (e) => set({ trashDays: Number(e.target.value) }) },
         [7, 30, 90].map((v) => h('option', { value: v, selected: settings.trashDays === v }, `${v} days`)))),
       h('h3', null, 'About'),
-      h('p', { class: 'muted small' }, `TamperDonkey ${status.version}. Free software under the GNU GPL v3. Based on the open-source Tampermonkey 2.9 by Jan Biniok.`))));
+      h('p', { class: 'muted small' }, `ScriptBurro ${status.version}. Free software under the GNU GPL v3. Based on the open-source Tampermonkey 2.9 by Jan Biniok.`))));
 }
 
 async function viewIntegrations() {
@@ -469,7 +469,7 @@ async function viewIntegrations() {
     h('div', { class: 'grid2' },
       h('div', { class: 'card pad' }, h('h3', null, 'MCP bridge'),
         h('p', { class: 'muted small' }, 'Lets AI tools that speak MCP (Claude Code, Claude Desktop and others) list, install and run your scripts. Start the companion on this computer with ',
-          h('code', null, 'npx tamperdonkey-mcp'), ' and paste the pairing token it prints.'),
+          h('code', null, 'npx scriptburro-mcp'), ' and paste the pairing token it prints.'),
         h('label', null, h('input', { type: 'checkbox', id: 'bridge-enabled', checked: b.enabled, onChange: (e) => set({ bridge: { enabled: e.target.checked } }).then(() => setTimeout(route, 600)) }), 'Connect to the companion'),
         field('Companion address', input('bridge-url', 'text', b.url, (v) => set({ bridge: { url: v } })), 'Must be on this computer (127.0.0.1).'),
         field('Pairing token', input('bridge-token', 'password', b.token, (v) => set({ bridge: { token: v } }), { autocomplete: 'off' })),

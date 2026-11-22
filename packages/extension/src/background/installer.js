@@ -1,4 +1,4 @@
-import { parseUserscript, scriptIdentity, resolveGrants, compareVersions } from '@tamperdonkey/core';
+import { parseUserscript, scriptIdentity, resolveGrants, compareVersions } from '@scriptburro/core';
 import { allScripts, getScript, putScript, getSettings, newId, newToken, addLog } from './store.js';
 
 const MAX_BYTES = 10 * 1024 * 1024;

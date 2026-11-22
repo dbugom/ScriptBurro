@@ -108,7 +108,7 @@ async function reviewPending(id) {
   const p = (await call('pending.list')).find((x) => x.id === id);
   if (!p) return done('This request was already answered or has expired');
   let grants = [];
-  const body = [h('div', { class: 'banner info' }, h('div', null, h('strong', null, p.client), ' asks TamperDonkey to: ', h('strong', null, p.summary), '.'))];
+  const body = [h('div', { class: 'banner info' }, h('div', null, h('strong', null, p.client), ' asks ScriptBurro to: ', h('strong', null, p.summary), '.'))];
   if (p.cmd === 'scripts.install') {
     const prev = await call('scripts.preview', { source: p.args.source, url: p.args.url });
     if (p.args.id) {

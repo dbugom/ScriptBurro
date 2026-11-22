@@ -1,4 +1,4 @@
-import { grantToApi } from '@tamperdonkey/core';
+import { grantToApi } from '@scriptburro/core';
 import { api } from './browser.js';
 
 /**

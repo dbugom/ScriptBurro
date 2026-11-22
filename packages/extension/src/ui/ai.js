@@ -6,7 +6,7 @@ import { extractCode } from './ai-extract.js';
  * their own API key. Requests go straight from this page to the Claude API; the result
  * is only shown to the user, who decides whether to put it in the editor.
  */
-const SYSTEM = `You help write userscripts for TamperDonkey, a userscript manager for Chrome and Firefox (Manifest V3).
+const SYSTEM = `You help write userscripts for ScriptBurro, a userscript manager for Chrome and Firefox (Manifest V3).
 
 Rules of this manager that differ from older managers:
 - A script must start with a // ==UserScript== metadata block with @name, @version and at least one @match.

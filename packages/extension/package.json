@@ -1,5 +1,5 @@
 {
-  "name": "@tamperdonkey/extension",
+  "name": "@scriptburro/extension",
   "version": "0.2.0",
   "private": true,
   "license": "GPL-3.0-or-later",
@@ -10,7 +10,7 @@
     "@codemirror/state": "^6.4.1",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.26.0",
-    "@tamperdonkey/core": "*",
+    "@scriptburro/core": "*",
     "codemirror": "^6.0.1"
   }
 }

@@ -34,7 +34,7 @@ api.runtime.onUserScriptMessage?.addListener(onUserScript);
 api.runtime.onMessageExternal?.addListener((msg, sender, sendResponse) => {
   (async () => {
     const { external } = await getSettings();
-    if (!sender.id || !external.extensions.includes(sender.id)) throw new Error('This extension is not on the TamperDonkey allow list.');
+    if (!sender.id || !external.extensions.includes(sender.id)) throw new Error('This extension is not on the ScriptBurro allow list.');
     if (!msg || typeof msg.cmd !== 'string') throw new Error('Expected { cmd, args }.');
     return handleExternal({ name: `extension ${sender.id}` }, msg.cmd, msg.args);
   })().then((result) => sendResponse({ ok: true, result }), (e) => sendResponse({ ok: false, error: String(e.message || e) }));

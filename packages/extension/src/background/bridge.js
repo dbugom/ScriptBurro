@@ -4,7 +4,7 @@ import { getSettings } from './store.js';
 import { handleExternal } from './external.js';
 
 /**
- * Connection to the local tamperdonkey-mcp companion. An extension cannot listen on a
+ * Connection to the local scriptburro-mcp companion. An extension cannot listen on a
  * port, so it dials out to the companion's WebSocket on this machine and presents the
  * pairing token the user copied from it.
  */
@@ -76,7 +76,7 @@ export async function connectBridge() {
     }
   };
   ws.onerror = () => {
-    if (!state.connected && !state.error) state.error = 'Could not reach the companion. Is tamperdonkey-mcp running?';
+    if (!state.connected && !state.error) state.error = 'Could not reach the companion. Is scriptburro-mcp running?';
   };
   ws.onclose = () => {
     const err = state.error;

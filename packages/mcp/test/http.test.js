@@ -17,7 +17,7 @@ let url;
 before(async () => {
   const [bridgePort, httpPort] = [await freePort(), await freePort()];
   url = `http://127.0.0.1:${httpPort}/mcp`;
-  child = spawn(process.execPath, [CLI, '--port', String(bridgePort), '--http', String(httpPort)], { env: { ...process.env, TAMPERDONKEY_TOKEN: TOKEN }, stdio: ['ignore', 'ignore', 'pipe'] });
+  child = spawn(process.execPath, [CLI, '--port', String(bridgePort), '--http', String(httpPort)], { env: { ...process.env, SCRIPTBURRO_TOKEN: TOKEN }, stdio: ['ignore', 'ignore', 'pipe'] });
   await new Promise((ok, fail) => {
     child.stderr.on('data', (d) => { if (String(d).includes('MCP over HTTP')) ok(); });
     child.on('exit', (c) => fail(new Error(`companion exited with ${c}`)));

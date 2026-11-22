@@ -1,5 +1,5 @@
 import { api } from '../shared/browser.js';
-import { checkConnect, resolveGrants } from '@tamperdonkey/core';
+import { checkConnect, resolveGrants } from '@scriptburro/core';
 import { hasPermission, PERMISSION_LABEL } from '../shared/permissions.js';
 import { findByToken, getValues, updateValues, getSettings, sessionGet, sessionSet } from './store.js';
 
@@ -71,7 +71,7 @@ export async function forgetFrame(tabId, frameId) {
       delete badges[tabId];
       await sessionSet('badges', badges);
       // The browser clears a tab's badge on navigation; the tooltip is reset here.
-      api.action.setTitle({ tabId, title: 'TamperDonkey' }).catch(() => {});
+      api.action.setTitle({ tabId, title: 'ScriptBurro' }).catch(() => {});
     }
   }
   // Events queued for the document that just went away will never be collected.
@@ -157,7 +157,7 @@ function toBase64(buf) {
 
 async function needPermission(name, script) {
   if (await hasPermission(name)) return;
-  throw new Error(`TamperDonkey may not ${PERMISSION_LABEL[name]} yet. Open "${script.meta.name}" in the dashboard, Settings tab, and allow it.`);
+  throw new Error(`ScriptBurro may not ${PERMISSION_LABEL[name]} yet. Open "${script.meta.name}" in the dashboard, Settings tab, and allow it.`);
 }
 
 async function connectAllowed(script, url, sender) {
@@ -179,7 +179,7 @@ const METHODS = {
     return events;
   }],
   // Toolbar badge for the tab the script runs in. Needs no grant: it only changes
-  // TamperDonkey's own icon. Only the top frame may set it.
+  // ScriptBurro's own icon. Only the top frame may set it.
   badge: [null, async (s, [o], sender) => {
     if (sender.frameId !== 0) return;
     const tabId = sender.tab.id;
@@ -189,7 +189,7 @@ const METHODS = {
     const color = /^#[0-9a-f]{6}$/i.test(o?.color || '') ? o.color : '#0d6b58';
     await api.action.setBadgeBackgroundColor({ tabId, color });
     try { await api.action.setBadgeTextColor?.({ tabId, color: '#ffffff' }); } catch { /* not in every browser */ }
-    await api.action.setTitle({ tabId, title: title ? `TamperDonkey\n${s.meta.name}: ${title}` : 'TamperDonkey' });
+    await api.action.setTitle({ tabId, title: title ? `ScriptBurro\n${s.meta.name}: ${title}` : 'ScriptBurro' });
     const badges = await sessionGet('badges', {});
     badges[tabId] = { ...badges[tabId], [s.id]: { text, title } };
     await sessionSet('badges', badges);

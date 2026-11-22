@@ -1,1 +1,1 @@
-{ "manifest_version": 3, "name": "TamperDonkey test caller", "version": "1.0", "description": "Stands in for another extension that sends commands to TamperDonkey." }
+{ "manifest_version": 3, "name": "ScriptBurro test caller", "version": "1.0", "description": "Stands in for another extension that sends commands to ScriptBurro." }

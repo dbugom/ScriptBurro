@@ -1,10 +1,10 @@
 {
-  "name": "tamperdonkey-mcp",
+  "name": "scriptburro-mcp",
   "version": "0.1.0",
-  "description": "MCP server that lets AI tools manage TamperDonkey userscripts through a local bridge.",
+  "description": "MCP server that lets AI tools manage ScriptBurro userscripts through a local bridge.",
   "license": "GPL-3.0-or-later",
   "type": "module",
-  "bin": { "tamperdonkey-mcp": "src/cli.js" },
+  "bin": { "scriptburro-mcp": "src/cli.js" },
   "files": ["src"],
   "engines": { "node": ">=20" },
   "dependencies": {

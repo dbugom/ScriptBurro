@@ -149,7 +149,7 @@ export class Bridge {
     }
     const target = this.mode === 'peer' ? this.peer : [...this.extensions].at(-1);
     if (!target) {
-      throw new Error('The TamperDonkey extension is not connected. In the browser open TamperDonkey > Integrations, turn on "Connect to the companion" and paste the pairing token.');
+      throw new Error('The ScriptBurro extension is not connected. In the browser open ScriptBurro > Integrations, turn on "Connect to the companion" and paste the pairing token.');
     }
     const id = crypto.randomUUID();
     return new Promise((resolve, reject) => {

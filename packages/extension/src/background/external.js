@@ -23,7 +23,7 @@ export async function handleExternal(client, cmd, args) {
   if (READ.includes(cmd)) return run(cmd, args, { by: client.name });
   if (!WRITE.includes(cmd)) throw new Error(`"${cmd}" is not available to outside clients.`);
   if (!settings.external.allowWrites) {
-    throw new Error('Changes from outside clients are turned off. Enable "Allow changes" in TamperDonkey settings > Integrations.');
+    throw new Error('Changes from outside clients are turned off. Enable "Allow changes" in ScriptBurro settings > Integrations.');
   }
   if (!settings.external.confirm) return run(cmd, args, { by: client.name });
 

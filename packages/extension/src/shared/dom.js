@@ -70,7 +70,7 @@ export function explainGrant(g) {
     GM_notification: 'Show desktop notifications', 'GM.notification': 'Show desktop notifications',
     GM_openInTab: 'Open new tabs', 'GM.openInTab': 'Open new tabs',
     GM_getTab: 'Keep data for a tab', GM_saveTab: 'Keep data for a tab', GM_getTabs: 'Keep data for a tab',
-    GM_registerMenuCommand: 'Add commands to the TamperDonkey menu', 'GM.registerMenuCommand': 'Add commands to the TamperDonkey menu',
+    GM_registerMenuCommand: 'Add commands to the ScriptBurro menu', 'GM.registerMenuCommand': 'Add commands to the ScriptBurro menu',
     unsafeWindow: 'Use unsafeWindow',
     'window.onurlchange': 'Notice when the page address changes'
   };

@@ -16,19 +16,19 @@ const value = (name, fallback) => {
 };
 
 if (flag('--help') || flag('-h')) {
-  process.stdout.write(`tamperdonkey-mcp ${version}
+  process.stdout.write(`scriptburro-mcp ${version}
 
-Lets MCP clients manage TamperDonkey userscripts in your browser.
+Lets MCP clients manage ScriptBurro userscripts in your browser.
 
 Usage:
-  tamperdonkey-mcp                 MCP over stdio (what most MCP clients start)
-  tamperdonkey-mcp --http [port]   MCP over HTTP at http://127.0.0.1:<port>/mcp (default 8766)
-  tamperdonkey-mcp --token         Print the pairing token and exit
+  scriptburro-mcp                 MCP over stdio (what most MCP clients start)
+  scriptburro-mcp --http [port]   MCP over HTTP at http://127.0.0.1:<port>/mcp (default 8766)
+  scriptburro-mcp --token         Print the pairing token and exit
 
 Options:
   --port <n>   Port the browser extension connects to (default 8765)
 
-Pairing: open TamperDonkey > Integrations in the browser, turn on
+Pairing: open ScriptBurro > Integrations in the browser, turn on
 "Connect to the companion" and paste the pairing token.
 `);
   process.exit(0);
@@ -41,11 +41,11 @@ if (flag('--token')) {
 }
 
 // stdout carries the MCP protocol in stdio mode, so all notes go to stderr.
-const log = (m) => process.stderr.write(`[tamperdonkey-mcp] ${m}\n`);
-const bridge = new Bridge({ port: Number(value('--port', process.env.TAMPERDONKEY_PORT || 8765)), token, log });
+const log = (m) => process.stderr.write(`[scriptburro-mcp] ${m}\n`);
+const bridge = new Bridge({ port: Number(value('--port', process.env.SCRIPTBURRO_PORT || 8765)), token, log });
 await bridge.start();
 log(`pairing token: ${token}`);
-log(`(stored in ${process.env.TAMPERDONKEY_TOKEN ? 'TAMPERDONKEY_TOKEN' : tokenFile()})`);
+log(`(stored in ${process.env.SCRIPTBURRO_TOKEN ? 'SCRIPTBURRO_TOKEN' : tokenFile()})`);
 
 if (flag('--http')) {
   const port = Number(value('--http', 8766));

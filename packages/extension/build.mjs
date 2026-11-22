@@ -23,11 +23,11 @@ const OPTIONAL = ['cookies', 'downloads'];
 function manifest(target) {
   const m = {
     manifest_version: 3,
-    name: 'TamperDonkey',
+    name: 'ScriptBurro',
     version: pkg.version,
     description: 'Open-source userscript manager with an MCP bridge for AI tools.',
     icons: { 16: 'icons/icon-16.png', 32: 'icons/icon-32.png', 48: 'icons/icon-48.png', 128: 'icons/icon-128.png' },
-    action: { default_title: 'TamperDonkey', default_popup: 'popup.html', default_icon: { 16: 'icons/icon-16.png', 32: 'icons/icon-32.png' } },
+    action: { default_title: 'ScriptBurro', default_popup: 'popup.html', default_icon: { 16: 'icons/icon-16.png', 32: 'icons/icon-32.png' } },
     options_ui: { page: 'dashboard.html', open_in_tab: true },
     host_permissions: ['<all_urls>']
   };
@@ -43,7 +43,7 @@ function manifest(target) {
     m.background = { scripts: ['background.js'] };
     m.browser_specific_settings = {
       gecko: {
-        id: 'tamperdonkey@dbugom.github.io',
+        id: 'scriptburro@dbugom.github.io',
         strict_min_version: '142.0',
         data_collection_permissions: { required: ['none'] }
       }
@@ -88,4 +88,4 @@ for (const target of ['chrome', 'firefox']) {
   await fs.writeFile(path.join(out, 'manifest.json'), JSON.stringify(manifest(target), null, 2));
   await fs.copyFile(path.join(root, '../../LICENSE'), path.join(out, 'LICENSE'));
 }
-console.log(`Built TamperDonkey ${pkg.version} -> dist/chrome, dist/firefox`);
+console.log(`Built ScriptBurro ${pkg.version} -> dist/chrome, dist/firefox`);
